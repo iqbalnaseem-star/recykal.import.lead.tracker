@@ -263,6 +263,11 @@
         <textarea id="a-notes" placeholder="Initial notes&#8230;"></textarea>
       </div>
     </div>
+    <div style="margin-top:12px">
+      <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:.3px;display:block;margin-bottom:6px">Materials Interest</label>
+      <div id="a-mat-btns" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px"></div>
+      <div id="a-mat-selected" class="mat-selected-list"></div>
+    </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeAddModal()">Cancel</button>
       <button class="btn-save" id="add-save-btn" onclick="saveLead()">Add Lead</button>
@@ -303,7 +308,6 @@ let rfqRemarkCache = {};
 let currentLead = null;
 let currentUser = '';
 
-// ── Google Auth ──
 function handleCredentialResponse(response) {
   const token = response.credential;
   const payload = JSON.parse(atob(token.split('.')[1]));
@@ -350,7 +354,6 @@ window.onload = function() {
   document.getElementById('signin-page').style.display = 'flex';
 };
 
-// ── API ──
 async function api(action, data) {
   data = data || {};
   const encoded = encodeURIComponent(JSON.stringify(data));
@@ -359,7 +362,6 @@ async function api(action, data) {
   return res.json();
 }
 
-// ── Load leads ──
 async function loadLeads() {
   document.getElementById('leads-body').innerHTML =
     '<tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading&#8230;</td></tr>';
@@ -423,13 +425,12 @@ function renderTable(leads) {
   }).join('');
 }
 
-// ── Panel ──
 async function openLead(id) {
   currentLead = allLeads.find(function(l) { return l.id === id; });
   if (!currentLead) return;
   document.getElementById('panel-title').textContent = currentLead.company_name;
   document.getElementById('panel-meta').textContent =
-    currentLead.country + ' · ' + (currentTab === 'buyer' ? 'Buyer' : 'Supplier') + ' · Added by ' + (currentLead.created_by||'&#8212;');
+    currentLead.country + ' · ' + (currentTab === 'buyer' ? 'Buyer' : 'Supplier') + ' · Added by ' + (currentLead.created_by||'—');
   document.getElementById('overlay').classList.add('open');
   document.getElementById('panel').classList.add('open');
   document.getElementById('panel-body').innerHTML = '<div style="padding:20px;color:#64748b"><span class="spinner"></span> Loading&#8230;</div>';
@@ -445,12 +446,12 @@ function renderPanel(lead, rfqs, remarks) {
   const mats = parseMaterials(lead.materials||'');
   const infoSection = '<div class="panel-section"><h3>Lead Info</h3>' +
     '<div class="info-row"><span><strong>Stage:</strong> <span class="badge badge-' + (STAGE_CLASS[lead.stage]||'prospect') + '" style="margin-left:3px">' + esc(lead.stage) + '</span></span>' +
-    '<span><strong>Assigned To:</strong> <span class="assignee" style="margin-left:3px">' + esc(lead.assigned_to||'&#8212;') + '</span></span>' +
+    '<span><strong>Assigned To:</strong> <span class="assignee" style="margin-left:3px">' + esc(lead.assigned_to||'—') + '</span></span>' +
     '<span><strong>Country:</strong> ' + esc(lead.country) + '</span>' +
-    '<span><strong>Location:</strong> ' + esc(lead.location||'&#8212;') + '</span></div>' +
-    '<div class="info-row" style="margin-top:6px"><span><strong>POC:</strong> ' + esc(lead.poc_name||'&#8212;') + '</span>' +
-    '<span><strong>Phone:</strong> ' + (lead.phone ? '<a href="tel:' + esc(lead.phone) + '">' + esc(lead.phone) + '</a>' : '&#8212;') + '</span>' +
-    '<span><strong>Email:</strong> ' + (lead.email ? '<a href="mailto:' + esc(lead.email) + '">' + esc(lead.email) + '</a>' : '&#8212;') + '</span></div>' +
+    '<span><strong>Location:</strong> ' + esc(lead.location||'—') + '</span></div>' +
+    '<div class="info-row" style="margin-top:6px"><span><strong>POC:</strong> ' + esc(lead.poc_name||'—') + '</span>' +
+    '<span><strong>Phone:</strong> ' + (lead.phone ? '<a href="tel:' + esc(lead.phone) + '">' + esc(lead.phone) + '</a>' : '—') + '</span>' +
+    '<span><strong>Email:</strong> ' + (lead.email ? '<a href="mailto:' + esc(lead.email) + '">' + esc(lead.email) + '</a>' : '—') + '</span></div>' +
     (lead.notes ? '<div style="margin-top:8px;font-size:12px;color:#475569;background:#f8fafc;padding:8px;border-radius:5px">' + esc(lead.notes) + '</div>' : '') +
     '<button class="btn-sm primary" style="margin-top:10px" onclick="openEditLead()">Edit Lead</button></div>';
 
@@ -475,7 +476,7 @@ function renderPanel(lead, rfqs, remarks) {
 function rfqCard(rfq) {
   const statusClass = { 'RFQ':'rfq','Negotiating':'badge-negotiating','Converted':'converted','Not Converted':'notconv' };
   return '<div class="rfq-card" id="rfq-' + rfq.id + '">' +
-    '<div class="rfq-card-header"><span class="rfq-title">' + esc(rfq.material||'&#8212;') + '</span>' +
+    '<div class="rfq-card-header"><span class="rfq-title">' + esc(rfq.material||'—') + '</span>' +
     '<div class="rfq-actions"><span class="badge badge-' + (statusClass[rfq.status]||'rfq') + '">' + esc(rfq.status) + '</span>' +
     '<button class="btn-sm" style="margin-left:4px" onclick="toggleEditRFQ(\'' + rfq.id + '\')">Edit</button></div></div>' +
     '<div class="rfq-meta">' +
@@ -494,7 +495,7 @@ function rfqCard(rfq) {
 
 function remarkHtml(r) {
   return '<div class="remark-item"><p>' + esc(r.remark) + '</p>' +
-    '<div class="remark-meta"><strong>' + esc(r.added_by||'&#8212;') + '</strong> &middot; ' + fmtDate(r.created_at) + '</div></div>';
+    '<div class="remark-meta"><strong>' + esc(r.added_by||'—') + '</strong> &middot; ' + fmtDate(r.created_at) + '</div></div>';
 }
 
 async function addLeadRemark() {
@@ -736,7 +737,27 @@ async function saveEditRFQ(rfqId) {
 function openAddModal() {
   document.getElementById('add-modal').classList.add('open');
   document.getElementById('add-error').style.display = 'none';
+  const btnsEl = document.getElementById('a-mat-btns');
+  btnsEl.innerHTML = Object.entries(MATERIALS).map(function(entry) {
+    const cat = entry[0]; const items = entry[1];
+    return '<span style="width:100%;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-top:4px">' + cat + '</span>' +
+      items.map(function(m) {
+        return '<button type="button" class="mat-btn" onclick="toggleAddMat(this,\'' + m + '\')">' + m + '</button>';
+      }).join('');
+  }).join('');
+  document.getElementById('a-mat-selected').innerHTML = '';
   document.getElementById('a-company').focus();
+}
+
+function toggleAddMat(btn, name) {
+  btn.classList.toggle('selected');
+  const list = document.getElementById('a-mat-selected');
+  if (btn.classList.contains('selected')) {
+    list.insertAdjacentHTML('beforeend', matSelectedRow(name, '', 'MT/Month'));
+  } else {
+    const row = list.querySelector('[data-mat="' + name + '"]');
+    if (row) row.remove();
+  }
 }
 
 function closeAddModal() {
@@ -744,6 +765,8 @@ function closeAddModal() {
   ['a-company','a-country','a-location','a-poc','a-phone','a-email','a-notes'].forEach(function(id){
     document.getElementById(id).value = '';
   });
+  document.getElementById('a-mat-btns').innerHTML = '';
+  document.getElementById('a-mat-selected').innerHTML = '';
 }
 
 async function saveLead() {
@@ -757,31 +780,42 @@ async function saveLead() {
     return;
   }
   const btn = document.getElementById('add-save-btn');
-  btn.disabled = true; btn.textContent = 'Saving\u2026';
-  const res = await api('addLead', {
-    type: currentTab, company_name: company, country: country,
-    location: document.getElementById('a-location').value.trim(),
-    stage: document.getElementById('a-stage').value,
-    assigned_to: document.getElementById('a-assigned').value,
-    poc_name: document.getElementById('a-poc').value.trim(),
-    phone: document.getElementById('a-phone').value.trim(),
-    email: document.getElementById('a-email').value.trim(),
-    notes: document.getElementById('a-notes').value.trim(),
-    materials: '', by: currentUser,
+  btn.disabled = true; btn.textContent = 'Saving...';
+  const matRows = document.querySelectorAll('#a-mat-selected [data-mat]');
+  const mats = Array.from(matRows).map(function(r) {
+    return { name: r.dataset.mat, qty: r.querySelector('input').value.trim(), uom: r.querySelector('select').value };
   });
-  btn.disabled = false; btn.textContent = 'Add Lead';
-  if (res.error === 'DUPLICATE') {
-    errEl.textContent = 'Duplicate: "' + company + '" from ' + country + ' already exists.';
+  try {
+    const res = await api('addLead', {
+      type: currentTab, company_name: company, country: country,
+      location: document.getElementById('a-location').value.trim(),
+      stage: document.getElementById('a-stage').value,
+      assigned_to: document.getElementById('a-assigned').value,
+      poc_name: document.getElementById('a-poc').value.trim(),
+      phone: document.getElementById('a-phone').value.trim(),
+      email: document.getElementById('a-email').value.trim(),
+      notes: document.getElementById('a-notes').value.trim(),
+      materials: serializeMaterials(mats),
+      by: currentUser,
+    });
+    btn.disabled = false; btn.textContent = 'Add Lead';
+    if (res.error === 'DUPLICATE') {
+      errEl.textContent = 'Duplicate: "' + company + '" from ' + country + ' already exists.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (res.error) {
+      errEl.textContent = 'Error: ' + res.error;
+      errEl.style.display = 'block';
+      return;
+    }
+    closeAddModal();
+    await loadLeads();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Add Lead';
+    errEl.textContent = 'Network error: ' + e.message;
     errEl.style.display = 'block';
-    return;
   }
-  if (res.error) {
-    errEl.textContent = 'Error: ' + res.error;
-    errEl.style.display = 'block';
-    return;
-  }
-  closeAddModal();
-  await loadLeads();
 }
 
 function switchTab(tab) {
@@ -805,9 +839,9 @@ function esc(str) {
 }
 
 function fmtDate(val) {
-  if (!val) return '\u2014';
+  if (!val) return '—';
   try { return new Date(val).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }); }
-  catch(e) { return '\u2014'; }
+  catch(e) { return '—'; }
 }
 
 function parseMaterials(str) {
