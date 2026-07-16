@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Recykal Import Lead Tracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; font-size: 13px; }
+
+  /* ── TOP BAR ── */
+  .topbar { background: #0f3d2e; color: #fff; padding: 0 20px; height: 52px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .topbar-logo { font-size: 15px; font-weight: 700; letter-spacing: .3px; display: flex; align-items: center; gap: 8px; }
+  .topbar-logo span { color: #6ee7b7; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .topbar-user strong { color: #6ee7b7; }
+  .btn-link { background: none; border: 1px solid #4ade80; color: #4ade80; padding: 3px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+  .btn-link:hover { background: rgba(74,222,128,.1); }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 0; background: #fff; border-bottom: 2px solid #e2e8f0; padding: 0 20px; }
+  .tab { padding: 11px 20px; cursor: pointer; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all .15s; }
+  .tab.active { color: #0f3d2e; border-bottom-color: #0f3d2e; }
+
+  /* ── FILTERS ── */
+  .filters { background: #fff; padding: 10px 20px; border-bottom: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+  .filter-group { display: flex; flex-direction: column; gap: 3px; }
+  .filter-group label { font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
+  .filter-group input, .filter-group select { border: 1px solid #e2e8f0; border-radius: 5px; padding: 5px 10px; font-size: 12px; background: #f8fafc; min-width: 130px; }
+  .filter-group input:focus, .filter-group select:focus { outline: none; border-color: #0f3d2e; }
+  .btn-clear { align-self: flex-end; padding: 5px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 5px; cursor: pointer; font-size: 11px; color: #64748b; }
+  .btn-add { align-self: flex-end; margin-left: auto; padding: 6px 16px; background: #0f3d2e; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 12px; }
+  .btn-add:hover { background: #1a5c45; }
+
+  /* ── TABLE ── */
+  .table-wrap { padding: 16px 20px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  thead tr { background: #0f3d2e; color: #fff; }
+  th { padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .1s; cursor: pointer; }
+  tbody tr:hover { background: #f0fdf4; }
+  td { padding: 9px 12px; vertical-align: middle; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .badge-prospect   { background: #e2e8f0; color: #475569; }
+  .badge-contacted  { background: #dbeafe; color: #1d4ed8; }
+  .badge-interested { background: #fef9c3; color: #854d0e; }
+  .badge-negotiating{ background: #fed7aa; color: #9a3412; }
+  .badge-closed     { background: #dcfce7; color: #166534; }
+  .badge-notworkable{ background: #fee2e2; color: #991b1b; }
+  .badge-rfq        { background: #dbeafe; color: #1e40af; }
+  .badge-converted  { background: #dcfce7; color: #166534; }
+  .badge-notconv    { background: #fee2e2; color: #991b1b; }
+  .badge-buyer { background: #ede9fe; color: #5b21b6; }
+  .badge-supplier { background: #cffafe; color: #0e7490; }
+  .assignee { font-weight: 600; color: #0f3d2e; }
+  .mat-chip { display: inline-block; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; border-radius: 4px; padding: 1px 6px; font-size: 10px; margin: 1px 2px 1px 0; white-space: nowrap; }
+  .empty-row td { text-align: center; padding: 48px; color: #94a3b8; }
+  .loading-row td { text-align: center; padding: 48px; color: #94a3b8; }
+
+  /* ── SIDE PANEL ── */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 200; }
+  .overlay.open { display: block; }
+  .panel { position: fixed; right: 0; top: 0; bottom: 0; width: min(680px, 100vw); background: #fff; box-shadow: -4px 0 24px rgba(0,0,0,.12); z-index: 201; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .22s ease; overflow: hidden; }
+  .panel.open { transform: translateX(0); }
+  .panel-header { background: #0f3d2e; color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .panel-header h2 { font-size: 15px; font-weight: 700; }
+  .panel-header .ph-meta { font-size: 11px; color: #6ee7b7; margin-top: 2px; }
+  .panel-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; line-height: 1; }
+  .panel-body { flex: 1; overflow-y: auto; padding: 0; }
+  .panel-section { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; }
+  .panel-section h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #64748b; margin-bottom: 10px; }
+
+  /* ── FORMS ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 3px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label { font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .3px; }
+  .form-group input, .form-group select, .form-group textarea { border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px 9px; font-size: 12px; background: #fff; width: 100%; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #0f3d2e; }
+  .form-group textarea { resize: vertical; min-height: 56px; }
+  .btn-save { background: #0f3d2e; color: #fff; border: none; border-radius: 5px; padding: 7px 18px; cursor: pointer; font-weight: 600; font-size: 12px; }
+  .btn-save:hover { background: #1a5c45; }
+  .btn-save:disabled { opacity: .5; cursor: default; }
+  .btn-cancel { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 5px; padding: 7px 14px; cursor: pointer; font-size: 12px; color: #64748b; }
+  .form-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+  /* ── MATERIALS ── */
+  .mat-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .mat-btn { padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 5px; cursor: pointer; font-size: 11px; background: #f8fafc; color: #475569; }
+  .mat-btn.selected { background: #0f3d2e; color: #fff; border-color: #0f3d2e; }
+  .mat-category { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .4px; margin: 6px 0 3px; }
+  .mat-selected-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+  .mat-row { display: flex; align-items: center; gap: 6px; }
+  .mat-row span { min-width: 100px; font-size: 11px; font-weight: 600; color: #0f3d2e; }
+  .mat-row input { width: 72px; border: 1px solid #e2e8f0; border-radius: 4px; padding: 3px 6px; font-size: 11px; }
+  .mat-row select { border: 1px solid #e2e8f0; border-radius: 4px; padding: 3px 4px; font-size: 11px; }
+
+  /* ── RFQs ── */
+  .rfq-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; }
+  .rfq-card-header { display: flex; align-items: center; justify-content: space-between; }
+  .rfq-card-header .rfq-title { font-weight: 600; font-size: 12px; }
+  .rfq-card-header .rfq-actions { display: flex; gap: 4px; }
+  .btn-sm { padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; border: 1px solid #e2e8f0; background: #fff; color: #475569; }
+  .btn-sm:hover { background: #f1f5f9; }
+  .btn-sm.primary { background: #0f3d2e; color: #fff; border-color: #0f3d2e; }
+  .rfq-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; font-size: 11px; color: #64748b; }
+  .rfq-meta span { display: flex; gap: 2px; }
+  .rfq-meta strong { color: #1a202c; }
+
+  /* ── REMARKS ── */
+  .remarks-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; margin-bottom: 8px; }
+  .remark-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 5px; padding: 7px 10px; }
+  .remark-item p { font-size: 12px; color: #1a202c; }
+  .remark-meta { font-size: 10px; color: #94a3b8; margin-top: 3px; }
+  .remark-meta strong { color: #475569; }
+  .remark-add { display: flex; gap: 6px; }
+  .remark-add input { flex: 1; border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px 9px; font-size: 12px; }
+  .remark-add input:focus { outline: none; border-color: #0f3d2e; }
+  .remark-add button { background: #0f3d2e; color: #fff; border: none; border-radius: 5px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 600; }
+
+  /* ── RFQ ACCORDION ── */
+  .rfq-remarks-toggle { font-size: 10px; color: #64748b; cursor: pointer; margin-top: 4px; }
+  .rfq-remarks-toggle:hover { color: #0f3d2e; }
+  .rfq-remarks-inner { margin-top: 6px; padding-top: 6px; border-top: 1px solid #e2e8f0; }
+
+  /* ── MODAL ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 300; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 10px; padding: 24px; width: min(520px, 95vw); max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,.15); }
+  .modal h3 { font-size: 16px; font-weight: 700; color: #0f3d2e; margin-bottom: 16px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+  /* ── USER PICKER MODAL ── */
+  #user-modal .modal { max-width: 360px; text-align: center; }
+  #user-modal h3 { font-size: 18px; margin-bottom: 6px; }
+  #user-modal p { color: #64748b; font-size: 13px; margin-bottom: 18px; }
+  .user-btn { display: block; width: 100%; padding: 10px; margin-bottom: 8px; border: 1.5px solid #e2e8f0; border-radius: 7px; background: #fff; cursor: pointer; font-size: 14px; font-weight: 600; color: #0f3d2e; text-align: left; transition: all .15s; }
+  .user-btn:hover { background: #f0fdf4; border-color: #0f3d2e; }
+
+  .error-banner { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 5px; padding: 8px 12px; color: #991b1b; font-size: 12px; margin-bottom: 10px; display: none; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #ccc; border-top-color: #0f3d2e; border-radius: 50%; animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .info-row { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: #475569; margin-bottom: 4px; }
+  .info-row span strong { color: #1a202c; }
+</style>
+</head>
+<body>
+
+<!-- USER PICKER MODAL -->
+<div class="modal-overlay open" id="user-modal">
+  <div class="modal">
+    <h3>Welcome to Recykal Lead Tracker</h3>
+    <p>Select your name to continue</p>
+    <button class="user-btn" onclick="setUser('Iqbal Naseem')">Iqbal Naseem</button>
+    <button class="user-btn" onclick="setUser('Prafulla Chandra')">Prafulla Chandra</button>
+    <button class="user-btn" onclick="setUser('Rounak Jindal')">Rounak Jindal</button>
+    <button class="user-btn" onclick="setUser('Mayank Dixit')">Mayank Dixit</button>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">🌿 <span>Recykal</span> Import Lead Tracker</div>
+  <div class="topbar-user">
+    Logged in as <strong id="user-display">—</strong>
+    <button class="btn-link" onclick="switchUser()">Switch</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" id="tab-buyer" onclick="switchTab('buyer')">Buyers</div>
+  <div class="tab" id="tab-supplier" onclick="switchTab('supplier')">Suppliers</div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters">
+  <div class="filter-group">
+    <label>Search</label>
+    <input type="text" id="f-search" placeholder="Company / country..." oninput="applyFilters()" />
+  </div>
+  <div class="filter-group">
+    <label>Stage</label>
+    <select id="f-stage" onchange="applyFilters()">
+      <option value="">All stages</option>
+      <option>Prospect</option><option>Contacted</option><option>Interested</option>
+      <option>Negotiating</option><option>Deal Closed</option>
+      <option>Not Workable</option><option>Not Interested</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Assigned To</label>
+    <select id="f-assigned" onchange="applyFilters()">
+      <option value="">Everyone</option>
+      <option>Iqbal Naseem</option><option>Prafulla Chandra</option>
+      <option>Rounak Jindal</option><option>Mayank Dixit</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Material</label>
+    <input type="text" id="f-material" placeholder="e.g. Milberry..." oninput="applyFilters()" />
+  </div>
+  <button class="btn-clear" onclick="clearFilters()">Clear</button>
+  <button class="btn-add" onclick="openAddModal()">+ Add Lead</button>
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap">
+  <table id="leads-table">
+    <thead>
+      <tr>
+        <th>Company</th>
+        <th>Country</th>
+        <th>Stage</th>
+        <th>Assigned To</th>
+        <th>Materials</th>
+        <th>POC</th>
+        <th>RFQs</th>
+        <th>Updated</th>
+      </tr>
+    </thead>
+    <tbody id="leads-body">
+      <tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+
+<!-- SIDE PANEL -->
+<div class="panel" id="panel">
+  <div class="panel-header">
+    <div>
+      <h2 id="panel-title">Lead Details</h2>
+      <div class="ph-meta" id="panel-meta"></div>
+    </div>
+    <button class="panel-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<!-- ADD LEAD MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <h3 id="add-modal-title">Add New Lead</h3>
+    <div class="error-banner" id="add-error"></div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Company Name *</label>
+        <input id="a-company" type="text" placeholder="e.g. Acme Metals Ltd" />
+      </div>
+      <div class="form-group">
+        <label>Country *</label>
+        <input id="a-country" type="text" placeholder="e.g. Germany" />
+      </div>
+      <div class="form-group">
+        <label>Location / City</label>
+        <input id="a-location" type="text" placeholder="e.g. Hamburg" />
+      </div>
+      <div class="form-group">
+        <label>Stage</label>
+        <select id="a-stage">
+          <option>Prospect</option><option>Contacted</option><option>Interested</option>
+          <option>Negotiating</option><option>Deal Closed</option>
+          <option>Not Workable</option><option>Not Interested</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Assigned To</label>
+        <select id="a-assigned">
+          <option>Iqbal Naseem</option><option>Prafulla Chandra</option>
+          <option>Rounak Jindal</option><option>Mayank Dixit</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>POC Name</label>
+        <input id="a-poc" type="text" placeholder="Contact person name" />
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input id="a-phone" type="tel" placeholder="+49 xxx xxx" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input id="a-email" type="email" placeholder="poc@company.com" />
+      </div>
+      <div class="form-group full">
+        <label>Notes</label>
+        <textarea id="a-notes" placeholder="Initial notes…"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeAddModal()">Cancel</button>
+      <button class="btn-save" id="add-save-btn" onclick="saveLead()">Add Lead</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG — replace with your Apps Script URL
+// ─────────────────────────────────────────────
+const API_URL = 'https://script.google.com/macros/s/AKfycbz-5hCQILfyN_26Y3ZTovQAiYYjrm15PQf4CCHsdLshmXC1_tUkGFgYyHw2YGzFy1mmvA/exec';
+
+const TEAM = ['Iqbal Naseem','Prafulla Chandra','Rounak Jindal','Mayank Dixit'];
+
+const MATERIALS = {
+  Copper:    ['Milberry','Candy','Birch','No 1 Copper','No 2 Copper','Cathode','Wire','Utensil','Berry'],
+  Brass:     ['Honey','Label','Hairwire','Ebony','White','Yellow'],
+  Aluminium: ['UBC','Tense','TT','Extrusion','Zorba','Wire'],
+};
+const ALL_MATERIALS = Object.values(MATERIALS).flat();
+
+const STAGES = ['Prospect','Contacted','Interested','Negotiating','Deal Closed','Not Workable','Not Interested'];
+const RFQ_STATUSES = ['RFQ','Negotiating','Converted','Not Converted'];
+const CURRENCIES = ['USD','EUR','GBP','INR','AED'];
+const UNITS = ['MT','KG','TON'];
+
+const STAGE_CLASS = {
+  'Prospect':'prospect','Contacted':'contacted','Interested':'interested',
+  'Negotiating':'negotiating','Deal Closed':'closed',
+  'Not Workable':'notworkable','Not Interested':'notworkable',
+};
+const RFQ_CLASS = { 'RFQ':'rfq','Negotiating':'badge-prospect','Converted':'converted','Not Converted':'notconv' };
+
+// ─── State ───
+let currentUser = '';
+let currentTab = 'buyer';
+let allLeads = [];
+let rfqCache = {};       // lead_id → rfqs[]
+let remarkCache = {};    // lead_id → remarks[]
+let rfqRemarkCache = {}; // rfq_id → remarks[]
+let currentLead = null;
+
+// ─── Init ───
+window.onload = () => {
+  const saved = localStorage.getItem('rclt_user');
+  if (saved) setUser(saved, true);
+};
+
+function setUser(name, silent) {
+  currentUser = name;
+  localStorage.setItem('rclt_user', name);
+  document.getElementById('user-display').textContent = name;
+  document.getElementById('user-modal').classList.remove('open');
+  if (!silent) loadLeads();
+  else loadLeads();
+}
+
+function switchUser() {
+  document.getElementById('user-modal').classList.add('open');
+}
+
+// ─── API ───
+async function api(action, data = {}) {
+  const encoded = encodeURIComponent(JSON.stringify(data));
+  const url = `${API_URL}?action=${action}&data=${encoded}`;
+  const res = await fetch(url, { redirect: 'follow' });
+  return res.json();
+}
+
+// ─── Load leads ───
+async function loadLeads() {
+  document.getElementById('leads-body').innerHTML =
+    '<tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading…</td></tr>';
+  try {
+    const result = await api('getLeads', { type: currentTab });
+    if (result.error) throw new Error(result.error);
+    allLeads = result.leads || [];
+  } catch (e) {
+    allLeads = [];
+    document.getElementById('leads-body').innerHTML =
+      `<tr class="empty-row"><td colspan="8" style="color:#ef4444">⚠ Could not connect to Google Sheet. Check the API_URL in the HTML file.<br><small style="color:#94a3b8">${e.message}</small></td></tr>`;
+    return;
+  }
+  rfqCache = {};
+  applyFilters();
+}
+
+function applyFilters() {
+  const search   = document.getElementById('f-search').value.toLowerCase();
+  const stage    = document.getElementById('f-stage').value;
+  const assigned = document.getElementById('f-assigned').value;
+  const mat      = document.getElementById('f-material').value.toLowerCase();
+
+  const filtered = allLeads.filter(l => {
+    if (search && !l.company_name?.toLowerCase().includes(search) && !l.country?.toLowerCase().includes(search)) return false;
+    if (stage && l.stage !== stage) return false;
+    if (assigned && l.assigned_to !== assigned) return false;
+    if (mat && !(l.materials || '').toLowerCase().includes(mat)) return false;
+    return true;
+  });
+
+  renderTable(filtered);
+}
+
+function clearFilters() {
+  ['f-search','f-stage','f-assigned','f-material'].forEach(id => {
+    const el = document.getElementById(id);
+    el.tagName === 'SELECT' ? el.value = '' : el.value = '';
+  });
+  applyFilters();
+}
+
+function renderTable(leads) {
+  const tbody = document.getElementById('leads-body');
+  if (!leads.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No leads found. Click "+ Add Lead" to get started.</td></tr>';
+    return;
+  }
+
+  const rfqCountFor = id => rfqCache[id]?.length ?? '…';
+
+  tbody.innerHTML = leads.map(l => {
+    const mats = parseMaterials(l.materials || '');
+    const matHtml = mats.slice(0,3).map(m => `<span class="mat-chip">${m.name}${m.qty ? ' '+m.qty+m.uom : ''}</span>`).join('') +
+      (mats.length > 3 ? `<span class="mat-chip">+${mats.length-3}</span>` : '');
+    return `<tr onclick="openLead('${l.id}')">
+      <td><strong>${esc(l.company_name)}</strong></td>
+      <td>${esc(l.country)}</td>
+      <td><span class="badge badge-${STAGE_CLASS[l.stage]||'prospect'}">${esc(l.stage)}</span></td>
+      <td><span class="assignee">${esc(l.assigned_to||'—')}</span></td>
+      <td>${matHtml||'<span style="color:#94a3b8">—</span>'}</td>
+      <td style="font-size:11px">${esc(l.poc_name||'—')}</td>
+      <td style="text-align:center">${rfqCache[l.id] !== undefined ? rfqCache[l.id].length : '<span style="color:#94a3b8">—</span>'}</td>
+      <td style="color:#64748b;font-size:11px">${fmtDate(l.updated_at)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── Panel ───
+async function openLead(id) {
+  currentLead = allLeads.find(l => l.id === id);
+  if (!currentLead) return;
+
+  document.getElementById('panel-title').textContent = currentLead.company_name;
+  document.getElementById('panel-meta').textContent =
+    `${currentLead.country} · ${currentTab === 'buyer' ? 'Buyer' : 'Supplier'} · Added by ${currentLead.created_by||'—'}`;
+
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+
+  document.getElementById('panel-body').innerHTML = '<div style="padding:20px;color:#64748b"><span class="spinner"></span> Loading…</div>';
+
+  const [rfqRes, remRes] = await Promise.all([
+    rfqCache[id] ? { rfqs: rfqCache[id] } : api('getRFQs', { lead_id: id }),
+    remarkCache[id] ? { remarks: remarkCache[id] } : api('getLeadRemarks', { lead_id: id }),
+  ]);
+  rfqCache[id] = rfqRes.rfqs || [];
+  remarkCache[id] = remRes.remarks || [];
+
+  renderPanel(currentLead, rfqCache[id], remarkCache[id]);
+}
+
+function renderPanel(lead, rfqs, remarks) {
+  const mats = parseMaterials(lead.materials || '');
+
+  const infoSection = `
+    <div class="panel-section">
+      <h3>Lead Info</h3>
+      <div class="info-row">
+        <span><strong>Stage:</strong> <span class="badge badge-${STAGE_CLASS[lead.stage]||'prospect'}" style="margin-left:3px">${esc(lead.stage)}</span></span>
+        <span><strong>Assigned To:</strong> <span class="assignee" style="margin-left:3px">${esc(lead.assigned_to||'—')}</span></span>
+        <span><strong>Country:</strong> ${esc(lead.country)}</span>
+        <span><strong>Location:</strong> ${esc(lead.location||'—')}</span>
+      </div>
+      <div class="info-row" style="margin-top:6px">
+        <span><strong>POC:</strong> ${esc(lead.poc_name||'—')}</span>
+        <span><strong>Phone:</strong> ${lead.phone ? `<a href="tel:${esc(lead.phone)}">${esc(lead.phone)}</a>` : '—'}</span>
+        <span><strong>Email:</strong> ${lead.email ? `<a href="mailto:${esc(lead.email)}">${esc(lead.email)}</a>` : '—'}</span>
+      </div>
+      ${lead.notes ? `<div style="margin-top:8px;font-size:12px;color:#475569;background:#f8fafc;padding:8px;border-radius:5px">${esc(lead.notes)}</div>` : ''}
+      <button class="btn-sm primary" style="margin-top:10px" onclick="openEditLead()">Edit Lead</button>
+    </div>`;
+
+  const matsSection = `
+    <div class="panel-section">
+      <h3>Materials Interest</h3>
+      ${mats.length ? mats.map(m => `
+        <div class="mat-row" style="margin-bottom:4px">
+          <span class="mat-chip" style="font-size:11px;padding:2px 8px">${esc(m.name)}</span>
+          <span style="font-size:11px;color:#475569">${m.qty ? m.qty+' '+m.uom : '<em style="color:#94a3b8">no qty</em>'}</span>
+        </div>`).join('') : '<span style="color:#94a3b8;font-size:12px">No materials added yet. Edit lead to add.</span>'}
+    </div>`;
+
+  const rfqSection = `
+    <div class="panel-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <h3 style="margin:0">RFQs (${rfqs.length})</h3>
+        <button class="btn-sm primary" onclick="openAddRFQ()">+ Add RFQ</button>
+      </div>
+      <div id="rfq-list">${rfqs.length ? rfqs.map(rfqCard).join('') : '<span style="color:#94a3b8;font-size:12px">No RFQs yet.</span>'}</div>
+    </div>`;
+
+  const remarksSection = `
+    <div class="panel-section">
+      <h3>Remarks (${remarks.length})</h3>
+      <div class="remarks-list">${remarks.length ? remarks.map(remarkHtml).join('') : '<span style="color:#94a3b8;font-size:12px">No remarks yet.</span>'}</div>
+      <div class="remark-add">
+        <input type="text" id="lead-remark-input" placeholder="Add a remark…" onkeydown="if(event.key==='Enter')addLeadRemark()" />
+        <button onclick="addLeadRemark()">Add</button>
+      </div>
+    </div>`;
+
+  document.getElementById('panel-body').innerHTML = infoSection + matsSection + rfqSection + remarksSection;
+}
+
+function rfqCard(rfq) {
+  const statusClass = { RFQ:'rfq',Negotiating:'badge-negotiating',Converted:'converted','Not Converted':'notconv' };
+  return `<div class="rfq-card" id="rfq-${rfq.id}">
+    <div class="rfq-card-header">
+      <span class="rfq-title">${esc(rfq.material||'—')}</span>
+      <div class="rfq-actions">
+        <span class="badge badge-${statusClass[rfq.status]||'rfq'}">${esc(rfq.status)}</span>
+        <button class="btn-sm" style="margin-left:4px" onclick="toggleEditRFQ('${rfq.id}')">Edit</button>
+      </div>
+    </div>
+    <div class="rfq-meta">
+      ${rfq.qty ? `<span>Qty: <strong>${esc(rfq.qty)} ${esc(rfq.unit||'MT')}</strong></span>` : ''}
+      ${rfq.expected_price ? `<span>Exp: <strong>${esc(rfq.currency||'USD')} ${esc(rfq.expected_price)}</strong></span>` : ''}
+      ${rfq.deal_closure_price ? `<span>Closed: <strong>${esc(rfq.currency||'USD')} ${esc(rfq.deal_closure_price)}</strong></span>` : ''}
+      ${rfq.attachment_pct ? `<span>Att%: <strong>${esc(rfq.attachment_pct)}%</strong></span>` : ''}
+      ${rfq.assigned_to ? `<span>POC: <strong>${esc(rfq.assigned_to)}</strong></span>` : ''}
+    </div>
+    ${rfq.not_converted_reason ? `<div style="font-size:11px;color:#991b1b;margin-top:4px">Reason: ${esc(rfq.not_converted_reason)}</div>` : ''}
+    ${rfq.notes ? `<div style="font-size:11px;color:#64748b;margin-top:4px">${esc(rfq.notes)}</div>` : ''}
+    <div class="rfq-remarks-toggle" onclick="toggleRFQRemarks('${rfq.id}')">💬 Remarks</div>
+    <div class="rfq-remarks-inner" id="rfq-rem-${rfq.id}" style="display:none"></div>
+    <div id="rfq-edit-${rfq.id}" style="display:none"></div>
+  </div>`;
+}
+
+function remarkHtml(r) {
+  return `<div class="remark-item">
+    <p>${esc(r.remark)}</p>
+    <div class="remark-meta"><strong>${esc(r.added_by||'—')}</strong> · ${fmtDate(r.created_at)}</div>
+  </div>`;
+}
+
+// ─── Lead Remarks ───
+async function addLeadRemark() {
+  const input = document.getElementById('lead-remark-input');
+  const text = input.value.trim();
+  if (!text || !currentLead) return;
+  input.value = '';
+  const res = await api('addLeadRemark', { lead_id: currentLead.id, remark: text, by: currentUser });
+  if (res.success) {
+    const newRem = { id: res.id, lead_id: currentLead.id, remark: text, added_by: currentUser, created_at: res.created_at };
+    remarkCache[currentLead.id] = [newRem, ...(remarkCache[currentLead.id]||[])];
+    const list = document.querySelector('.remarks-list');
+    if (list) {
+      list.insertAdjacentHTML('afterbegin', remarkHtml(newRem));
+    }
+  }
+}
+
+// ─── RFQ Remarks ───
+async function toggleRFQRemarks(rfqId) {
+  const el = document.getElementById(`rfq-rem-${rfqId}`);
+  if (el.style.display === 'none') {
+    el.style.display = 'block';
+    if (!rfqRemarkCache[rfqId]) {
+      el.innerHTML = '<span class="spinner"></span>';
+      const res = await api('getRFQRemarks', { rfq_id: rfqId });
+      rfqRemarkCache[rfqId] = res.remarks || [];
+    }
+    el.innerHTML = `
+      <div class="remarks-list" style="max-height:160px">${rfqRemarkCache[rfqId].map(remarkHtml).join('') || '<span style="color:#94a3b8;font-size:11px">No remarks.</span>'}</div>
+      <div class="remark-add">
+        <input id="rfq-rem-input-${rfqId}" type="text" placeholder="Add remark…" onkeydown="if(event.key==='Enter')addRFQRemark('${rfqId}')" />
+        <button onclick="addRFQRemark('${rfqId}')">Add</button>
+      </div>`;
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+async function addRFQRemark(rfqId) {
+  const input = document.getElementById(`rfq-rem-input-${rfqId}`);
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  const res = await api('addRFQRemark', { rfq_id: rfqId, remark: text, by: currentUser });
+  if (res.success) {
+    const newRem = { id: res.id, rfq_id: rfqId, remark: text, added_by: currentUser, created_at: res.created_at };
+    rfqRemarkCache[rfqId] = [newRem, ...(rfqRemarkCache[rfqId]||[])];
+    const list = document.querySelector(`#rfq-rem-${rfqId} .remarks-list`);
+    if (list) list.insertAdjacentHTML('afterbegin', remarkHtml(newRem));
+  }
+}
+
+// ─── Edit Lead Panel ───
+function openEditLead() {
+  const l = currentLead;
+  const mats = parseMaterials(l.materials||'');
+
+  // Build material selector
+  const matBtns = Object.entries(MATERIALS).map(([cat, items]) =>
+    `<div class="mat-category">${cat}</div>` +
+    items.map(m => `<button type="button" class="mat-btn ${mats.find(x=>x.name===m)?'selected':''}" onclick="toggleMat(this,'${m}')">${m}</button>`).join('')
+  ).join('');
+
+  const selectedRows = mats.map(m => matSelectedRow(m.name, m.qty, m.uom)).join('');
+
+  const html = `
+    <div style="padding:16px 20px">
+      <h3 style="font-size:13px;font-weight:700;color:#0f3d2e;margin-bottom:12px">Edit Lead</h3>
+      <div class="form-grid">
+        <div class="form-group full"><label>Company Name</label><input id="e-company" value="${esc(l.company_name||'')}" /></div>
+        <div class="form-group"><label>Country</label><input id="e-country" value="${esc(l.country||'')}" /></div>
+        <div class="form-group"><label>Location</label><input id="e-location" value="${esc(l.location||'')}" /></div>
+        <div class="form-group"><label>Stage</label>
+          <select id="e-stage">${STAGES.map(s=>`<option${s===l.stage?' selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Assigned To</label>
+          <select id="e-assigned">${TEAM.map(t=>`<option${t===l.assigned_to?' selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="form-group"><label>POC Name</label><input id="e-poc" value="${esc(l.poc_name||'')}" /></div>
+        <div class="form-group"><label>Phone</label><input id="e-phone" value="${esc(l.phone||'')}" /></div>
+        <div class="form-group"><label>Email</label><input id="e-email" value="${esc(l.email||'')}" /></div>
+        <div class="form-group full"><label>Notes</label><textarea id="e-notes">${esc(l.notes||'')}</textarea></div>
+      </div>
+
+      <div style="margin-top:12px">
+        <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:.3px">Materials</label>
+        <div class="mat-grid" style="margin-top:6px">${matBtns}</div>
+        <div class="mat-selected-list" id="mat-selected">${selectedRows}</div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="openLead('${l.id}')">Cancel</button>
+        <button class="btn-save" onclick="saveEditLead('${l.id}')">Save Changes</button>
+      </div>
+    </div>`;
+
+  document.getElementById('panel-body').innerHTML = html;
+}
+
+function toggleMat(btn, name) {
+  btn.classList.toggle('selected');
+  const list = document.getElementById('mat-selected');
+  if (btn.classList.contains('selected')) {
+    list.insertAdjacentHTML('beforeend', matSelectedRow(name,'','MT/Month'));
+  } else {
+    const row = list.querySelector(`[data-mat="${name}"]`);
+    if (row) row.remove();
+  }
+}
+
+function matSelectedRow(name, qty, uom) {
+  const uoms = ['MT/Month','MT','MT/Year','MT/Quarter'];
+  return `<div class="mat-row" data-mat="${esc(name)}">
+    <span class="mat-chip">${esc(name)}</span>
+    <input type="number" placeholder="Qty" value="${esc(qty||'')}" style="width:70px" />
+    <select>${uoms.map(u=>`<option${u===uom?' selected':''}>${u}</option>`).join('')}</select>
+  </div>`;
+}
+
+function collectMaterials() {
+  const rows = document.querySelectorAll('#mat-selected [data-mat]');
+  return Array.from(rows).map(r => {
+    const qty = r.querySelector('input').value.trim();
+    const uom = r.querySelector('select').value;
+    return { name: r.dataset.mat, qty, uom };
+  });
+}
+
+async function saveEditLead(id) {
+  const mats = collectMaterials();
+  const payload = {
+    id,
+    company_name: document.getElementById('e-company').value.trim(),
+    country: document.getElementById('e-country').value.trim(),
+    location: document.getElementById('e-location').value.trim(),
+    stage: document.getElementById('e-stage').value,
+    assigned_to: document.getElementById('e-assigned').value,
+    poc_name: document.getElementById('e-poc').value.trim(),
+    phone: document.getElementById('e-phone').value.trim(),
+    email: document.getElementById('e-email').value.trim(),
+    notes: document.getElementById('e-notes').value.trim(),
+    materials: serializeMaterials(mats),
+    by: currentUser,
+  };
+  const res = await api('updateLead', payload);
+  if (res.success) {
+    Object.assign(currentLead, payload);
+    const idx = allLeads.findIndex(l => l.id === id);
+    if (idx >= 0) Object.assign(allLeads[idx], payload);
+    openLead(id);
+    applyFilters();
+  } else {
+    alert('Error: ' + (res.error||'Unknown'));
+  }
+}
+
+// ─── Add RFQ ───
+function openAddRFQ() {
+  const matOptions = ALL_MATERIALS.map(m => `<option>${m}</option>`).join('');
+  const html = `
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px;margin-bottom:12px" id="add-rfq-form">
+      <div style="font-size:12px;font-weight:700;color:#0f3d2e;margin-bottom:8px">New RFQ</div>
+      <div class="form-grid three">
+        <div class="form-group">
+          <label>Material</label>
+          <select id="rfq-material"><option value="">Select…</option>${matOptions}</select>
+        </div>
+        <div class="form-group"><label>Qty</label><input type="number" id="rfq-qty" placeholder="e.g. 500" /></div>
+        <div class="form-group"><label>Unit</label>
+          <select id="rfq-unit">${UNITS.map(u=>`<option>${u}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Currency</label>
+          <select id="rfq-currency">${CURRENCIES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Exp. Price / MT</label><input type="number" id="rfq-exp-price" placeholder="0" /></div>
+        <div class="form-group"><label>Closure Price / MT</label><input type="number" id="rfq-close-price" placeholder="0" /></div>
+        <div class="form-group"><label>Attachment %</label><input type="number" id="rfq-att-pct" min="0" max="100" placeholder="0-100" /></div>
+        <div class="form-group"><label>Status</label>
+          <select id="rfq-status">${RFQ_STATUSES.map(s=>`<option>${s}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Assigned To</label>
+          <select id="rfq-assigned"><option value="">—</option>${TEAM.map(t=>`<option>${t}</option>`).join('')}</select></div>
+        <div class="form-group full"><label>Not Converted Reason</label><input id="rfq-ncr" placeholder="If not converted…" /></div>
+        <div class="form-group full"><label>Notes</label><textarea id="rfq-notes" rows="2"></textarea></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="cancelAddRFQ()">Cancel</button>
+        <button class="btn-save" onclick="saveAddRFQ()">Save RFQ</button>
+      </div>
+    </div>`;
+  document.getElementById('rfq-list').insertAdjacentHTML('afterbegin', html);
+  document.getElementById('rfq-material').focus();
+}
+
+function cancelAddRFQ() {
+  const f = document.getElementById('add-rfq-form');
+  if (f) f.remove();
+}
+
+async function saveAddRFQ() {
+  const payload = {
+    lead_id: currentLead.id,
+    material: document.getElementById('rfq-material').value,
+    qty: document.getElementById('rfq-qty').value || null,
+    unit: document.getElementById('rfq-unit').value,
+    currency: document.getElementById('rfq-currency').value,
+    expected_price: document.getElementById('rfq-exp-price').value || null,
+    deal_closure_price: document.getElementById('rfq-close-price').value || null,
+    attachment_pct: document.getElementById('rfq-att-pct').value || null,
+    status: document.getElementById('rfq-status').value,
+    assigned_to: document.getElementById('rfq-assigned').value,
+    not_converted_reason: document.getElementById('rfq-ncr').value.trim(),
+    notes: document.getElementById('rfq-notes').value.trim(),
+    by: currentUser,
+  };
+  const res = await api('addRFQ', payload);
+  if (res.success) {
+    payload.id = res.id;
+    rfqCache[currentLead.id] = [payload, ...(rfqCache[currentLead.id]||[])];
+    const f = document.getElementById('add-rfq-form');
+    if (f) f.remove();
+    const list = document.getElementById('rfq-list');
+    if (list) list.insertAdjacentHTML('afterbegin', rfqCard(payload));
+  } else {
+    alert('Error: ' + res.error);
+  }
+}
+
+// ─── Edit RFQ ───
+function toggleEditRFQ(rfqId) {
+  const el = document.getElementById(`rfq-edit-${rfqId}`);
+  if (el.style.display !== 'none') { el.style.display = 'none'; return; }
+
+  const rfq = rfqCache[currentLead?.id]?.find(r => r.id === rfqId);
+  if (!rfq) return;
+
+  const matOptions = ALL_MATERIALS.map(m => `<option${m===rfq.material?' selected':''}>${m}</option>`).join('');
+  el.innerHTML = `
+    <div style="border-top:1px solid #e2e8f0;margin-top:8px;padding-top:8px">
+      <div class="form-grid three">
+        <div class="form-group"><label>Material</label>
+          <select id="re-mat-${rfqId}"><option value="">—</option>${matOptions}</select></div>
+        <div class="form-group"><label>Qty</label><input type="number" id="re-qty-${rfqId}" value="${esc(rfq.qty||'')}" /></div>
+        <div class="form-group"><label>Unit</label>
+          <select id="re-unit-${rfqId}">${UNITS.map(u=>`<option${u===rfq.unit?' selected':''}>${u}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Currency</label>
+          <select id="re-cur-${rfqId}">${CURRENCIES.map(c=>`<option${c===rfq.currency?' selected':''}>${c}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Exp. Price</label><input type="number" id="re-exp-${rfqId}" value="${esc(rfq.expected_price||'')}" /></div>
+        <div class="form-group"><label>Closure Price</label><input type="number" id="re-close-${rfqId}" value="${esc(rfq.deal_closure_price||'')}" /></div>
+        <div class="form-group"><label>Att %</label><input type="number" id="re-att-${rfqId}" value="${esc(rfq.attachment_pct||'')}" min="0" max="100" /></div>
+        <div class="form-group"><label>Status</label>
+          <select id="re-status-${rfqId}">${RFQ_STATUSES.map(s=>`<option${s===rfq.status?' selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Assigned To</label>
+          <select id="re-assigned-${rfqId}"><option value="">—</option>${TEAM.map(t=>`<option${t===rfq.assigned_to?' selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="form-group full"><label>Not Converted Reason</label><input id="re-ncr-${rfqId}" value="${esc(rfq.not_converted_reason||'')}" /></div>
+        <div class="form-group full"><label>Notes</label><textarea id="re-notes-${rfqId}">${esc(rfq.notes||'')}</textarea></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="toggleEditRFQ('${rfqId}')">Cancel</button>
+        <button class="btn-save" onclick="saveEditRFQ('${rfqId}')">Save</button>
+      </div>
+    </div>`;
+  el.style.display = 'block';
+}
+
+async function saveEditRFQ(rfqId) {
+  const payload = {
+    id: rfqId,
+    material: document.getElementById(`re-mat-${rfqId}`).value,
+    qty: document.getElementById(`re-qty-${rfqId}`).value || null,
+    unit: document.getElementById(`re-unit-${rfqId}`).value,
+    currency: document.getElementById(`re-cur-${rfqId}`).value,
+    expected_price: document.getElementById(`re-exp-${rfqId}`).value || null,
+    deal_closure_price: document.getElementById(`re-close-${rfqId}`).value || null,
+    attachment_pct: document.getElementById(`re-att-${rfqId}`).value || null,
+    status: document.getElementById(`re-status-${rfqId}`).value,
+    assigned_to: document.getElementById(`re-assigned-${rfqId}`).value,
+    not_converted_reason: document.getElementById(`re-ncr-${rfqId}`).value.trim(),
+    notes: document.getElementById(`re-notes-${rfqId}`).value.trim(),
+  };
+  const res = await api('updateRFQ', payload);
+  if (res.success) {
+    const cache = rfqCache[currentLead.id];
+    const idx = cache.findIndex(r => r.id === rfqId);
+    if (idx >= 0) Object.assign(cache[idx], payload);
+    const card = document.getElementById(`rfq-${rfqId}`);
+    if (card) card.outerHTML = rfqCard(cache[idx]);
+  } else {
+    alert('Error: ' + res.error);
+  }
+}
+
+// ─── Add Lead Modal ───
+function openAddModal() {
+  document.getElementById('add-modal').classList.add('open');
+  document.getElementById('add-error').style.display = 'none';
+  document.getElementById('a-company').focus();
+}
+function closeAddModal() {
+  document.getElementById('add-modal').classList.remove('open');
+  ['a-company','a-country','a-location','a-poc','a-phone','a-email','a-notes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+async function saveLead() {
+  const company = document.getElementById('a-company').value.trim();
+  const country = document.getElementById('a-country').value.trim();
+  const errEl = document.getElementById('add-error');
+  errEl.style.display = 'none';
+
+  if (!company || !country) {
+    errEl.textContent = 'Company name and country are required.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('add-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const res = await api('addLead', {
+    type: currentTab,
+    company_name: company,
+    country,
+    location: document.getElementById('a-location').value.trim(),
+    stage: document.getElementById('a-stage').value,
+    assigned_to: document.getElementById('a-assigned').value,
+    poc_name: document.getElementById('a-poc').value.trim(),
+    phone: document.getElementById('a-phone').value.trim(),
+    email: document.getElementById('a-email').value.trim(),
+    notes: document.getElementById('a-notes').value.trim(),
+    materials: '',
+    by: currentUser,
+  });
+
+  btn.disabled = false; btn.textContent = 'Add Lead';
+
+  if (res.error === 'DUPLICATE') {
+    errEl.textContent = `Duplicate: "${company}" from ${country} already exists in ${currentTab}s.`;
+    errEl.style.display = 'block';
+    return;
+  }
+  if (res.error) {
+    errEl.textContent = 'Error: ' + res.error;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  closeAddModal();
+  await loadLeads();
+}
+
+// ─── Tab switch ───
+function switchTab(tab) {
+  currentTab = tab;
+  ['buyer','supplier'].forEach(t => {
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+  });
+  clearFilters();
+  loadLeads();
+}
+
+function closePanel() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+  currentLead = null;
+}
+
+// ─── Helpers ───
+function esc(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtDate(val) {
+  if (!val) return '—';
+  try {
+    return new Date(val).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  } catch { return '—'; }
+}
+
+function parseMaterials(str) {
+  // Format: "Milberry:500:MT/Month,Candy:200:MT"
+  if (!str) return [];
+  return str.split(',').map(s => {
+    const [name, qty, uom] = s.trim().split(':');
+    return { name: name||'', qty: qty||'', uom: uom||'MT/Month' };
+  }).filter(m => m.name);
+}
+
+function serializeMaterials(mats) {
+  return mats.map(m => `${m.name}:${m.qty||''}:${m.uom||'MT/Month'}`).join(',');
+}
+</script>
+</body>
+</html>
