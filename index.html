@@ -363,20 +363,33 @@ async function api(action, data) {
 }
 
 async function loadLeads() {
-  document.getElementById('leads-body').innerHTML =
-    '<tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading&#8230;</td></tr>';
+  // Show cached data instantly
+  const cacheKey = 'rclt_leads_' + currentTab;
+  const cached = localStorage.getItem(cacheKey);
+  if (cached) {
+    try {
+      allLeads = JSON.parse(cached);
+      rfqCache = {};
+      applyFilters();
+    } catch(e) {}
+  } else {
+    document.getElementById('leads-body').innerHTML =
+      '<tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading&#8230;</td></tr>';
+  }
+  // Refresh in background
   try {
     const result = await api('getLeads', { type: currentTab });
     if (result.error) throw new Error(result.error);
     allLeads = result.leads || [];
+    localStorage.setItem(cacheKey, JSON.stringify(allLeads));
+    rfqCache = {};
+    applyFilters();
   } catch(e) {
-    allLeads = [];
-    document.getElementById('leads-body').innerHTML =
-      '<tr class="empty-row"><td colspan="8" style="color:#ef4444">Could not connect to Google Sheet. ' + e.message + '</td></tr>';
-    return;
+    if (!cached) {
+      document.getElementById('leads-body').innerHTML =
+        '<tr class="empty-row"><td colspan="8" style="color:#ef4444">Could not connect to Google Sheet. ' + e.message + '</td></tr>';
+    }
   }
-  rfqCache = {};
-  applyFilters();
 }
 
 function applyFilters() {
