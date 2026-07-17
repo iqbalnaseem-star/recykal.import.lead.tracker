@@ -115,153 +115,82 @@
 </head>
 <body>
 
-<!-- GOOGLE SIGN-IN PAGE -->
 <div id="signin-page" style="display:flex;position:fixed;inset:0;background:#f0f4f8;z-index:500;align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:12px;padding:40px 48px;box-shadow:0 4px 24px rgba(0,0,0,.1);text-align:center;max-width:380px;width:90%;">
     <div style="font-size:28px;margin-bottom:8px;">&#127807;</div>
     <h2 style="font-size:20px;font-weight:700;color:#0f3d2e;margin-bottom:4px;">Recykal Lead Tracker</h2>
     <p style="font-size:13px;color:#64748b;margin-bottom:28px;">Sign in with your @recykal.com account</p>
-    <div id="g_id_onload"
-         data-client_id="990583974585-urcqsg4igf0m4r42h3srhr7qeodk6uk0.apps.googleusercontent.com"
-         data-callback="handleCredentialResponse"
-         data-auto_prompt="true">
-    </div>
-    <div class="g_id_signin"
-         data-type="standard"
-         data-size="large"
-         data-theme="outline"
-         data-text="sign_in_with"
-         data-shape="rectangular"
-         data-logo_alignment="left">
-    </div>
+    <div id="g_id_onload" data-client_id="990583974585-urcqsg4igf0m4r42h3srhr7qeodk6uk0.apps.googleusercontent.com" data-callback="handleCredentialResponse" data-auto_prompt="true"></div>
+    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left"></div>
     <div id="signin-error" style="display:none;margin-top:16px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;padding:10px 14px;color:#991b1b;font-size:12px;"></div>
   </div>
 </div>
 
-<!-- TOP BAR -->
 <div class="topbar">
   <div class="topbar-logo">&#127807; <span>Recykal</span> Import Lead Tracker</div>
-  <div class="topbar-user">
-    Logged in as <strong id="user-display">&#8212;</strong>
-    <button class="btn-link" onclick="signOut()">Sign Out</button>
-  </div>
+  <div class="topbar-user">Logged in as <strong id="user-display">&#8212;</strong><button class="btn-link" onclick="signOut()">Sign Out</button></div>
 </div>
 
-<!-- TABS -->
 <div class="tabs">
   <div class="tab active" id="tab-buyer" onclick="switchTab('buyer')">Buyers</div>
   <div class="tab" id="tab-supplier" onclick="switchTab('supplier')">Suppliers</div>
+  <div class="tab" id="tab-rfqs" onclick="switchTab('rfqs')">All RFQs</div>
 </div>
 
-<!-- FILTERS -->
-<div class="filters">
-  <div class="filter-group">
-    <label>Search</label>
-    <input type="text" id="f-search" placeholder="Company / country..." oninput="applyFilters()" />
-  </div>
-  <div class="filter-group">
-    <label>Stage</label>
-    <select id="f-stage" onchange="applyFilters()">
-      <option value="">All stages</option>
-      <option>Prospect</option><option>Contacted</option><option>Interested</option>
-      <option>Negotiating</option><option>Deal Closed</option>
-      <option>Not Workable</option><option>Not Interested</option>
-    </select>
-  </div>
-  <div class="filter-group">
-    <label>Assigned To</label>
-    <select id="f-assigned" onchange="applyFilters()">
-      <option value="">Everyone</option>
-      <option>Iqbal Naseem</option><option>Prafulla Chandra</option>
-      <option>Rounak Jindal</option><option>Mayank Dixit</option>
-    </select>
-  </div>
-  <div class="filter-group">
-    <label>Material</label>
-    <input type="text" id="f-material" placeholder="e.g. Milberry..." oninput="applyFilters()" />
-  </div>
+<div class="filters" id="filters">
+  <div class="filter-group"><label>Search</label><input type="text" id="f-search" placeholder="Company / country..." oninput="applyFilters()" /></div>
+  <div class="filter-group"><label>Stage</label><select id="f-stage" onchange="applyFilters()"><option value="">All stages</option><option>Prospect</option><option>Contacted</option><option>Interested</option><option>Negotiating</option><option>Deal Closed</option><option>Not Workable</option><option>Not Interested</option></select></div>
+  <div class="filter-group"><label>Assigned To</label><select id="f-assigned" onchange="applyFilters()"><option value="">Everyone</option><option>Iqbal Naseem</option><option>Prafulla Chandra</option><option>Rounak Jindal</option><option>Mayank Dixit</option></select></div>
+  <div class="filter-group"><label>Material</label><input type="text" id="f-material" placeholder="e.g. Milberry..." oninput="applyFilters()" /></div>
   <button class="btn-clear" onclick="clearFilters()">Clear</button>
   <button class="btn-add" onclick="openAddModal()">+ Add Lead</button>
 </div>
 
-<!-- TABLE -->
-<div class="table-wrap">
-  <table id="leads-table">
-    <thead>
-      <tr>
-        <th>Company</th><th>Country</th><th>Stage</th><th>Assigned To</th>
-        <th>Materials</th><th>POC</th><th>RFQs</th><th>Updated</th>
-      </tr>
-    </thead>
-    <tbody id="leads-body">
-      <tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading&#8230;</td></tr>
-    </tbody>
+<div class="filters" id="rfq-filters" style="display:none">
+  <div class="filter-group"><label>Status</label><select id="rf-status" onchange="applyRFQFilters()"><option value="">All statuses</option><option>RFQ</option><option>Negotiating</option><option>Converted</option><option>Not Converted</option></select></div>
+  <div class="filter-group"><label>Material</label><input type="text" id="rf-material" placeholder="e.g. Milberry..." oninput="applyRFQFilters()" /></div>
+  <div class="filter-group"><label>Assigned To</label><select id="rf-assigned" onchange="applyRFQFilters()"><option value="">Everyone</option><option>Iqbal Naseem</option><option>Prafulla Chandra</option><option>Rounak Jindal</option><option>Mayank Dixit</option></select></div>
+  <div class="filter-group"><label>Type</label><select id="rf-type" onchange="applyRFQFilters()"><option value="">All</option><option value="buyer">Buyers</option><option value="supplier">Suppliers</option></select></div>
+  <button class="btn-clear" onclick="clearRFQFilters()">Clear</button>
+</div>
+
+<div class="table-wrap" id="rfq-table-wrap" style="display:none">
+  <table>
+    <thead><tr><th>Company</th><th>Country</th><th>Type</th><th>Material</th><th>Qty</th><th>Exp Price</th><th>Closure Price</th><th>Att%</th><th>Status</th><th>Assigned To</th><th>Updated</th></tr></thead>
+    <tbody id="rfq-table-body"><tr class="loading-row"><td colspan="11"><span class="spinner"></span> Loading&#8230;</td></tr></tbody>
+  </table>
+</div>
+
+<div class="table-wrap" id="leads-table-wrap">
+  <table>
+    <thead><tr><th>Company</th><th>Country</th><th>Stage</th><th>Assigned To</th><th>Materials</th><th>POC</th><th>RFQs</th><th>Updated</th></tr></thead>
+    <tbody id="leads-body"><tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading&#8230;</td></tr></tbody>
   </table>
 </div>
 
 <div class="overlay" id="overlay" onclick="closePanel()"></div>
-
-<!-- SIDE PANEL -->
 <div class="panel" id="panel">
   <div class="panel-header">
-    <div>
-      <h2 id="panel-title">Lead Details</h2>
-      <div class="ph-meta" id="panel-meta"></div>
-    </div>
+    <div><h2 id="panel-title">Lead Details</h2><div class="ph-meta" id="panel-meta"></div></div>
     <button class="panel-close" onclick="closePanel()">&#10005;</button>
   </div>
   <div class="panel-body" id="panel-body"></div>
 </div>
 
-<!-- ADD LEAD MODAL -->
 <div class="modal-overlay" id="add-modal">
   <div class="modal">
     <h3>Add New Lead</h3>
     <div class="error-banner" id="add-error"></div>
     <div class="form-grid">
-      <div class="form-group full">
-        <label>Company Name *</label>
-        <input id="a-company" type="text" placeholder="e.g. Acme Metals Ltd" />
-      </div>
-      <div class="form-group">
-        <label>Country *</label>
-        <input id="a-country" type="text" placeholder="e.g. Germany" />
-      </div>
-      <div class="form-group">
-        <label>Location / City</label>
-        <input id="a-location" type="text" placeholder="e.g. Hamburg" />
-      </div>
-      <div class="form-group">
-        <label>Stage</label>
-        <select id="a-stage">
-          <option>Prospect</option><option>Contacted</option><option>Interested</option>
-          <option>Negotiating</option><option>Deal Closed</option>
-          <option>Not Workable</option><option>Not Interested</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Assigned To</label>
-        <select id="a-assigned">
-          <option>Iqbal Naseem</option><option>Prafulla Chandra</option>
-          <option>Rounak Jindal</option><option>Mayank Dixit</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>POC Name</label>
-        <input id="a-poc" type="text" placeholder="Contact person name" />
-      </div>
-      <div class="form-group">
-        <label>Phone</label>
-        <input id="a-phone" type="tel" placeholder="+49 xxx xxx" />
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input id="a-email" type="email" placeholder="poc@company.com" />
-      </div>
-      <div class="form-group full">
-        <label>Notes</label>
-        <textarea id="a-notes" placeholder="Initial notes&#8230;"></textarea>
-      </div>
+      <div class="form-group full"><label>Company Name *</label><input id="a-company" type="text" placeholder="e.g. Acme Metals Ltd" /></div>
+      <div class="form-group"><label>Country *</label><input id="a-country" type="text" placeholder="e.g. Germany" /></div>
+      <div class="form-group"><label>Location / City</label><input id="a-location" type="text" placeholder="e.g. Hamburg" /></div>
+      <div class="form-group"><label>Stage</label><select id="a-stage"><option>Prospect</option><option>Contacted</option><option>Interested</option><option>Negotiating</option><option>Deal Closed</option><option>Not Workable</option><option>Not Interested</option></select></div>
+      <div class="form-group"><label>Assigned To</label><select id="a-assigned"><option>Iqbal Naseem</option><option>Prafulla Chandra</option><option>Rounak Jindal</option><option>Mayank Dixit</option></select></div>
+      <div class="form-group"><label>POC Name</label><input id="a-poc" type="text" placeholder="Contact person name" /></div>
+      <div class="form-group"><label>Phone</label><input id="a-phone" type="tel" placeholder="+49 xxx xxx" /></div>
+      <div class="form-group"><label>Email</label><input id="a-email" type="email" placeholder="poc@company.com" /></div>
+      <div class="form-group full"><label>Notes</label><textarea id="a-notes" placeholder="Initial notes&#8230;"></textarea></div>
     </div>
     <div style="margin-top:12px">
       <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:.3px;display:block;margin-bottom:6px">Materials Interest</label>
@@ -279,34 +208,22 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbz-5hCQILfyN_26Y3ZTovQAiYYjrm15PQf4CCHsdLshmXC1_tUkGFgYyHw2YGzFy1mmvA/exec';
 const ALLOWED_DOMAIN = 'recykal.com';
 let currentToken = '';
-
 const TEAM = ['Iqbal Naseem','Prafulla Chandra','Rounak Jindal','Mayank Dixit'];
-
 const MATERIALS = {
   Copper:    ['Milberry','Candy','Birch','No 1 Copper','No 2 Copper','Cathode','Wire','Utensil','Berry'],
   Brass:     ['Honey','Label','Hairwire','Ebony','White','Yellow'],
   Aluminium: ['UBC','Tense','TT','Extrusion','Zorba','Wire'],
 };
 const ALL_MATERIALS = Object.values(MATERIALS).flat();
-
 const STAGES = ['Prospect','Contacted','Interested','Negotiating','Deal Closed','Not Workable','Not Interested'];
 const RFQ_STATUSES = ['RFQ','Negotiating','Converted','Not Converted'];
 const CURRENCIES = ['USD','EUR','GBP','INR','AED'];
 const UNITS = ['MT','KG','TON'];
-
-const STAGE_CLASS = {
-  'Prospect':'prospect','Contacted':'contacted','Interested':'interested',
-  'Negotiating':'negotiating','Deal Closed':'closed',
-  'Not Workable':'notworkable','Not Interested':'notworkable',
-};
-
+const STAGE_CLASS = {'Prospect':'prospect','Contacted':'contacted','Interested':'interested','Negotiating':'negotiating','Deal Closed':'closed','Not Workable':'notworkable','Not Interested':'notworkable'};
 let currentTab = 'buyer';
-let allLeads = [];
-let rfqCache = {};
-let remarkCache = {};
-let rfqRemarkCache = {};
-let currentLead = null;
-let currentUser = '';
+let allLeads = [], allRFQs = [];
+let rfqCache = {}, remarkCache = {}, rfqRemarkCache = {};
+let currentLead = null, currentUser = '';
 
 function handleCredentialResponse(response) {
   const token = response.credential;
@@ -318,8 +235,7 @@ function handleCredentialResponse(response) {
     google.accounts.id.disableAutoSelect();
     return;
   }
-  currentToken = token;
-  currentUser = payload.name;
+  currentToken = token; currentUser = payload.name;
   sessionStorage.setItem('rclt_token', token);
   document.getElementById('signin-page').style.display = 'none';
   document.getElementById('user-display').textContent = payload.name + ' (' + payload.email + ')';
@@ -328,8 +244,7 @@ function handleCredentialResponse(response) {
 
 function signOut() {
   sessionStorage.removeItem('rclt_token');
-  currentToken = '';
-  currentUser = '';
+  currentToken = ''; currentUser = '';
   google.accounts.id.disableAutoSelect();
   document.getElementById('signin-page').style.display = 'flex';
   document.getElementById('leads-body').innerHTML = '';
@@ -340,14 +255,11 @@ window.onload = function() {
   if (saved) {
     try {
       const payload = JSON.parse(atob(saved.split('.')[1]));
-      const expired = payload.exp < Math.floor(Date.now() / 1000);
-      if (!expired && payload.email.endsWith('@' + ALLOWED_DOMAIN)) {
-        currentToken = saved;
-        currentUser = payload.name;
+      if (payload.exp >= Math.floor(Date.now()/1000) && payload.email.endsWith('@'+ALLOWED_DOMAIN)) {
+        currentToken = saved; currentUser = payload.name;
         document.getElementById('signin-page').style.display = 'none';
         document.getElementById('user-display').textContent = payload.name + ' (' + payload.email + ')';
-        loadLeads();
-        return;
+        loadLeads(); return;
       }
     } catch(e) {}
   }
@@ -356,488 +268,396 @@ window.onload = function() {
 
 async function api(action, data) {
   data = data || {};
-  const encoded = encodeURIComponent(JSON.stringify(data));
-  const url = API_URL + '?action=' + action + '&token=' + encodeURIComponent(currentToken) + '&data=' + encoded;
+  const url = API_URL + '?action=' + action + '&token=' + encodeURIComponent(currentToken) + '&data=' + encodeURIComponent(JSON.stringify(data));
   const res = await fetch(url, { redirect: 'follow' });
   return res.json();
 }
 
 async function loadLeads() {
-  // Show cached data instantly
   const cacheKey = 'rclt_leads_' + currentTab;
   const cached = localStorage.getItem(cacheKey);
   if (cached) {
-    try {
-      allLeads = JSON.parse(cached);
-      rfqCache = {};
-      applyFilters();
-    } catch(e) {}
+    try { allLeads = JSON.parse(cached); rfqCache = {}; applyFilters(); } catch(e) {}
   } else {
-    document.getElementById('leads-body').innerHTML =
-      '<tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading&#8230;</td></tr>';
+    document.getElementById('leads-body').innerHTML = '<tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading&#8230;</td></tr>';
   }
-  // Refresh in background
   try {
     const result = await api('getLeads', { type: currentTab });
     if (result.error) throw new Error(result.error);
     allLeads = result.leads || [];
     localStorage.setItem(cacheKey, JSON.stringify(allLeads));
-    rfqCache = {};
-    applyFilters();
+    rfqCache = {}; applyFilters();
   } catch(e) {
-    if (!cached) {
-      document.getElementById('leads-body').innerHTML =
-        '<tr class="empty-row"><td colspan="8" style="color:#ef4444">Could not connect to Google Sheet. ' + e.message + '</td></tr>';
-    }
+    if (!cached) document.getElementById('leads-body').innerHTML = '<tr class="empty-row"><td colspan="8" style="color:#ef4444">Could not connect. ' + e.message + '</td></tr>';
+  }
+}
+
+async function loadAllRFQs() {
+  const cacheKey = 'rclt_rfqs_all';
+  const cached = localStorage.getItem(cacheKey);
+  if (cached) {
+    try { allRFQs = JSON.parse(cached); applyRFQFilters(); } catch(e) {}
+  } else {
+    document.getElementById('rfq-table-body').innerHTML = '<tr class="loading-row"><td colspan="11"><span class="spinner"></span> Loading&#8230;</td></tr>';
+  }
+  try {
+    const result = await api('getAllRFQs', {});
+    if (result.error) throw new Error(result.error);
+    allRFQs = result.rfqs || [];
+    localStorage.setItem(cacheKey, JSON.stringify(allRFQs));
+    applyRFQFilters();
+  } catch(e) {
+    if (!cached) document.getElementById('rfq-table-body').innerHTML = '<tr class="empty-row"><td colspan="11" style="color:#ef4444">Could not load RFQs. ' + e.message + '</td></tr>';
   }
 }
 
 function applyFilters() {
-  const search   = document.getElementById('f-search').value.toLowerCase();
-  const stage    = document.getElementById('f-stage').value;
+  const search = document.getElementById('f-search').value.toLowerCase();
+  const stage = document.getElementById('f-stage').value;
   const assigned = document.getElementById('f-assigned').value;
-  const mat      = document.getElementById('f-material').value.toLowerCase();
-  const filtered = allLeads.filter(function(l) {
+  const mat = document.getElementById('f-material').value.toLowerCase();
+  renderTable(allLeads.filter(function(l) {
     if (search && !(l.company_name||'').toLowerCase().includes(search) && !(l.country||'').toLowerCase().includes(search)) return false;
     if (stage && l.stage !== stage) return false;
     if (assigned && l.assigned_to !== assigned) return false;
     if (mat && !(l.materials||'').toLowerCase().includes(mat)) return false;
     return true;
-  });
-  renderTable(filtered);
+  }));
 }
 
 function clearFilters() {
-  ['f-search','f-stage','f-assigned','f-material'].forEach(function(id) {
-    document.getElementById(id).value = '';
-  });
+  ['f-search','f-stage','f-assigned','f-material'].forEach(function(id){ document.getElementById(id).value=''; });
   applyFilters();
+}
+
+function applyRFQFilters() {
+  const status = document.getElementById('rf-status').value;
+  const material = document.getElementById('rf-material').value.toLowerCase();
+  const assigned = document.getElementById('rf-assigned').value;
+  const type = document.getElementById('rf-type').value;
+  renderRFQTable(allRFQs.filter(function(r) {
+    if (status && r.status !== status) return false;
+    if (material && !(r.material||'').toLowerCase().includes(material)) return false;
+    if (assigned && r.assigned_to !== assigned) return false;
+    if (type && r.lead_type !== type) return false;
+    return true;
+  }));
+}
+
+function clearRFQFilters() {
+  ['rf-status','rf-assigned','rf-type'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('rf-material').value = '';
+  applyRFQFilters();
 }
 
 function renderTable(leads) {
   const tbody = document.getElementById('leads-body');
-  if (!leads.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No leads found. Click "+ Add Lead" to get started.</td></tr>';
-    return;
-  }
+  if (!leads.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No leads found. Click "+ Add Lead" to get started.</td></tr>'; return; }
   tbody.innerHTML = leads.map(function(l) {
-    const mats = parseMaterials(l.materials || '');
-    const matHtml = mats.slice(0,3).map(function(m) {
-      return '<span class="mat-chip">' + esc(m.name) + (m.qty ? ' ' + m.qty + ' ' + m.uom : '') + '</span>';
-    }).join('') + (mats.length > 3 ? '<span class="mat-chip">+' + (mats.length-3) + '</span>' : '');
-    return '<tr onclick="openLead(\'' + l.id + '\')">' +
-      '<td><strong>' + esc(l.company_name) + '</strong></td>' +
-      '<td>' + esc(l.country) + '</td>' +
-      '<td><span class="badge badge-' + (STAGE_CLASS[l.stage]||'prospect') + '">' + esc(l.stage) + '</span></td>' +
-      '<td><span class="assignee">' + esc(l.assigned_to||'&#8212;') + '</span></td>' +
-      '<td>' + (matHtml||'<span style="color:#94a3b8">&#8212;</span>') + '</td>' +
-      '<td style="font-size:11px">' + esc(l.poc_name||'&#8212;') + '</td>' +
-      '<td style="text-align:center">' + (rfqCache[l.id] !== undefined ? rfqCache[l.id].length : '<span style="color:#94a3b8">&#8212;</span>') + '</td>' +
-      '<td style="color:#64748b;font-size:11px">' + fmtDate(l.updated_at) + '</td>' +
-      '</tr>';
+    const mats = parseMaterials(l.materials||'');
+    const matHtml = mats.slice(0,3).map(function(m){ return '<span class="mat-chip">'+esc(m.name)+(m.qty?' '+m.qty+' '+m.uom:'')+'</span>'; }).join('')+(mats.length>3?'<span class="mat-chip">+'+(mats.length-3)+'</span>':'');
+    return '<tr onclick="openLead(\''+l.id+'\')"><td><strong>'+esc(l.company_name)+'</strong></td><td>'+esc(l.country)+'</td><td><span class="badge badge-'+(STAGE_CLASS[l.stage]||'prospect')+'">'+esc(l.stage)+'</span></td><td><span class="assignee">'+esc(l.assigned_to||'—')+'</span></td><td>'+(matHtml||'<span style="color:#94a3b8">—</span>')+'</td><td style="font-size:11px">'+esc(l.poc_name||'—')+'</td><td style="text-align:center">'+(rfqCache[l.id]!==undefined?rfqCache[l.id].length:'<span style="color:#94a3b8">—</span>')+'</td><td style="color:#64748b;font-size:11px">'+fmtDate(l.updated_at)+'</td></tr>';
+  }).join('');
+}
+
+function renderRFQTable(rfqs) {
+  const tbody = document.getElementById('rfq-table-body');
+  if (!rfqs.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="11">No RFQs found.</td></tr>'; return; }
+  const sc = {'RFQ':'rfq','Negotiating':'negotiating','Converted':'converted','Not Converted':'notconv'};
+  tbody.innerHTML = rfqs.map(function(r) {
+    return '<tr onclick="openLeadFromRFQ(\''+r.lead_id+'\')">'+
+      '<td><strong>'+esc(r.company_name||'—')+'</strong></td>'+
+      '<td>'+esc(r.country||'—')+'</td>'+
+      '<td><span style="font-size:10px;color:#64748b;text-transform:capitalize">'+esc(r.lead_type||'—')+'</span></td>'+
+      '<td><span class="mat-chip">'+esc(r.material||'—')+'</span></td>'+
+      '<td>'+(r.qty?esc(r.qty)+' '+esc(r.unit||'MT'):'<span style="color:#94a3b8">—</span>')+'</td>'+
+      '<td>'+(r.expected_price?esc(r.currency||'USD')+' '+esc(r.expected_price):'<span style="color:#94a3b8">—</span>')+'</td>'+
+      '<td>'+(r.deal_closure_price?esc(r.currency||'USD')+' '+esc(r.deal_closure_price):'<span style="color:#94a3b8">—</span>')+'</td>'+
+      '<td>'+(r.attachment_pct?esc(r.attachment_pct)+'%':'<span style="color:#94a3b8">—</span>')+'</td>'+
+      '<td><span class="badge badge-'+(sc[r.status]||'rfq')+'">'+esc(r.status||'RFQ')+'</span></td>'+
+      '<td><span class="assignee">'+esc(r.assigned_to||'—')+'</span></td>'+
+      '<td style="color:#64748b;font-size:11px">'+fmtDate(r.updated_at||r.created_at)+'</td></tr>';
   }).join('');
 }
 
 async function openLead(id) {
-  currentLead = allLeads.find(function(l) { return l.id === id; });
+  currentLead = allLeads.find(function(l){ return l.id===id; });
   if (!currentLead) return;
   document.getElementById('panel-title').textContent = currentLead.company_name;
-  document.getElementById('panel-meta').textContent =
-    currentLead.country + ' · ' + (currentTab === 'buyer' ? 'Buyer' : 'Supplier') + ' · Added by ' + (currentLead.created_by||'—');
+  document.getElementById('panel-meta').textContent = currentLead.country+' · '+(currentTab==='buyer'?'Buyer':'Supplier')+' · Added by '+(currentLead.created_by||'—');
   document.getElementById('overlay').classList.add('open');
   document.getElementById('panel').classList.add('open');
   document.getElementById('panel-body').innerHTML = '<div style="padding:20px;color:#64748b"><span class="spinner"></span> Loading&#8230;</div>';
-  const rfqP = rfqCache[id] ? { rfqs: rfqCache[id] } : api('getRFQs', { lead_id: id });
-  const remP = remarkCache[id] ? { remarks: remarkCache[id] } : api('getLeadRemarks', { lead_id: id });
-  const results = await Promise.all([rfqP, remP]);
-  rfqCache[id] = results[0].rfqs || [];
-  remarkCache[id] = results[1].remarks || [];
+  const rfqP = rfqCache[id]?{rfqs:rfqCache[id]}:api('getRFQs',{lead_id:id});
+  const remP = remarkCache[id]?{remarks:remarkCache[id]}:api('getLeadRemarks',{lead_id:id});
+  const results = await Promise.all([rfqP,remP]);
+  rfqCache[id] = results[0].rfqs||[];
+  remarkCache[id] = results[1].remarks||[];
   renderPanel(currentLead, rfqCache[id], remarkCache[id]);
+}
+
+async function openLeadFromRFQ(leadId) {
+  if (!allLeads.find(function(l){ return l.id===leadId; })) {
+    const res = await api('getLeads', {});
+    allLeads = res.leads||[];
+  }
+  const lead = allLeads.find(function(l){ return l.id===leadId; });
+  if (lead) { currentTab = lead.type||'buyer'; openLead(leadId); }
 }
 
 function renderPanel(lead, rfqs, remarks) {
   const mats = parseMaterials(lead.materials||'');
-  const infoSection = '<div class="panel-section"><h3>Lead Info</h3>' +
-    '<div class="info-row"><span><strong>Stage:</strong> <span class="badge badge-' + (STAGE_CLASS[lead.stage]||'prospect') + '" style="margin-left:3px">' + esc(lead.stage) + '</span></span>' +
-    '<span><strong>Assigned To:</strong> <span class="assignee" style="margin-left:3px">' + esc(lead.assigned_to||'—') + '</span></span>' +
-    '<span><strong>Country:</strong> ' + esc(lead.country) + '</span>' +
-    '<span><strong>Location:</strong> ' + esc(lead.location||'—') + '</span></div>' +
-    '<div class="info-row" style="margin-top:6px"><span><strong>POC:</strong> ' + esc(lead.poc_name||'—') + '</span>' +
-    '<span><strong>Phone:</strong> ' + (lead.phone ? '<a href="tel:' + esc(lead.phone) + '">' + esc(lead.phone) + '</a>' : '—') + '</span>' +
-    '<span><strong>Email:</strong> ' + (lead.email ? '<a href="mailto:' + esc(lead.email) + '">' + esc(lead.email) + '</a>' : '—') + '</span></div>' +
-    (lead.notes ? '<div style="margin-top:8px;font-size:12px;color:#475569;background:#f8fafc;padding:8px;border-radius:5px">' + esc(lead.notes) + '</div>' : '') +
+  const infoSection = '<div class="panel-section"><h3>Lead Info</h3>'+
+    '<div class="info-row"><span><strong>Stage:</strong> <span class="badge badge-'+(STAGE_CLASS[lead.stage]||'prospect')+'" style="margin-left:3px">'+esc(lead.stage)+'</span></span>'+
+    '<span><strong>Assigned To:</strong> <span class="assignee" style="margin-left:3px">'+esc(lead.assigned_to||'—')+'</span></span>'+
+    '<span><strong>Country:</strong> '+esc(lead.country)+'</span><span><strong>Location:</strong> '+esc(lead.location||'—')+'</span></div>'+
+    '<div class="info-row" style="margin-top:6px"><span><strong>POC:</strong> '+esc(lead.poc_name||'—')+'</span>'+
+    '<span><strong>Phone:</strong> '+(lead.phone?'<a href="tel:'+esc(lead.phone)+'">'+esc(lead.phone)+'</a>':'—')+'</span>'+
+    '<span><strong>Email:</strong> '+(lead.email?'<a href="mailto:'+esc(lead.email)+'">'+esc(lead.email)+'</a>':'—')+'</span></div>'+
+    (lead.notes?'<div style="margin-top:8px;font-size:12px;color:#475569;background:#f8fafc;padding:8px;border-radius:5px">'+esc(lead.notes)+'</div>':'')+
     '<button class="btn-sm primary" style="margin-top:10px" onclick="openEditLead()">Edit Lead</button></div>';
-
-  const matsSection = '<div class="panel-section"><h3>Materials Interest</h3>' +
-    (mats.length ? mats.map(function(m) {
-      return '<div class="mat-row" style="margin-bottom:4px"><span class="mat-chip" style="font-size:11px;padding:2px 8px">' + esc(m.name) + '</span>' +
-        '<span style="font-size:11px;color:#475569">' + (m.qty ? m.qty + ' ' + m.uom : '<em style="color:#94a3b8">no qty</em>') + '</span></div>';
-    }).join('') : '<span style="color:#94a3b8;font-size:12px">No materials added yet. Edit lead to add.</span>') + '</div>';
-
-  const rfqSection = '<div class="panel-section"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
-    '<h3 style="margin:0">RFQs (' + rfqs.length + ')</h3><button class="btn-sm primary" onclick="openAddRFQ()">+ Add RFQ</button></div>' +
-    '<div id="rfq-list">' + (rfqs.length ? rfqs.map(rfqCard).join('') : '<span style="color:#94a3b8;font-size:12px">No RFQs yet.</span>') + '</div></div>';
-
-  const remarksSection = '<div class="panel-section"><h3>Remarks (' + remarks.length + ')</h3>' +
-    '<div class="remarks-list">' + (remarks.length ? remarks.map(remarkHtml).join('') : '<span style="color:#94a3b8;font-size:12px">No remarks yet.</span>') + '</div>' +
-    '<div class="remark-add"><input type="text" id="lead-remark-input" placeholder="Add a remark&#8230;" onkeydown="if(event.key===\'Enter\')addLeadRemark()" />' +
-    '<button onclick="addLeadRemark()">Add</button></div></div>';
-
-  document.getElementById('panel-body').innerHTML = infoSection + matsSection + rfqSection + remarksSection;
+  const matsSection = '<div class="panel-section"><h3>Materials Interest</h3>'+
+    (mats.length?mats.map(function(m){ return '<div class="mat-row" style="margin-bottom:4px"><span class="mat-chip" style="font-size:11px;padding:2px 8px">'+esc(m.name)+'</span><span style="font-size:11px;color:#475569">'+(m.qty?m.qty+' '+m.uom:'<em style="color:#94a3b8">no qty</em>')+'</span></div>'; }).join(''):'<span style="color:#94a3b8;font-size:12px">No materials added yet.</span>')+'</div>';
+  const rfqSection = '<div class="panel-section"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'+
+    '<h3 style="margin:0">RFQs ('+rfqs.length+')</h3><button class="btn-sm primary" onclick="openAddRFQ()">+ Add RFQ</button></div>'+
+    '<div id="rfq-list">'+(rfqs.length?rfqs.map(rfqCard).join(''):'<span style="color:#94a3b8;font-size:12px">No RFQs yet.</span>')+'</div></div>';
+  const remarksSection = '<div class="panel-section"><h3>Remarks ('+remarks.length+')</h3>'+
+    '<div class="remarks-list">'+(remarks.length?remarks.map(remarkHtml).join(''):'<span style="color:#94a3b8;font-size:12px">No remarks yet.</span>')+'</div>'+
+    '<div class="remark-add"><input type="text" id="lead-remark-input" placeholder="Add a remark&#8230;" onkeydown="if(event.key===\'Enter\')addLeadRemark()" /><button onclick="addLeadRemark()">Add</button></div></div>';
+  document.getElementById('panel-body').innerHTML = infoSection+matsSection+rfqSection+remarksSection;
 }
 
 function rfqCard(rfq) {
-  const statusClass = { 'RFQ':'rfq','Negotiating':'badge-negotiating','Converted':'converted','Not Converted':'notconv' };
-  return '<div class="rfq-card" id="rfq-' + rfq.id + '">' +
-    '<div class="rfq-card-header"><span class="rfq-title">' + esc(rfq.material||'—') + '</span>' +
-    '<div class="rfq-actions"><span class="badge badge-' + (statusClass[rfq.status]||'rfq') + '">' + esc(rfq.status) + '</span>' +
-    '<button class="btn-sm" style="margin-left:4px" onclick="toggleEditRFQ(\'' + rfq.id + '\')">Edit</button></div></div>' +
-    '<div class="rfq-meta">' +
-    (rfq.qty ? '<span>Qty: <strong>' + esc(rfq.qty) + ' ' + esc(rfq.unit||'MT') + '</strong></span>' : '') +
-    (rfq.expected_price ? '<span>Exp: <strong>' + esc(rfq.currency||'USD') + ' ' + esc(rfq.expected_price) + '</strong></span>' : '') +
-    (rfq.deal_closure_price ? '<span>Closed: <strong>' + esc(rfq.currency||'USD') + ' ' + esc(rfq.deal_closure_price) + '</strong></span>' : '') +
-    (rfq.attachment_pct ? '<span>Att%: <strong>' + esc(rfq.attachment_pct) + '%</strong></span>' : '') +
-    (rfq.assigned_to ? '<span>POC: <strong>' + esc(rfq.assigned_to) + '</strong></span>' : '') +
-    '</div>' +
-    (rfq.not_converted_reason ? '<div style="font-size:11px;color:#991b1b;margin-top:4px">Reason: ' + esc(rfq.not_converted_reason) + '</div>' : '') +
-    (rfq.notes ? '<div style="font-size:11px;color:#64748b;margin-top:4px">' + esc(rfq.notes) + '</div>' : '') +
-    '<div class="rfq-remarks-toggle" onclick="toggleRFQRemarks(\'' + rfq.id + '\')">&#128172; Remarks</div>' +
-    '<div class="rfq-remarks-inner" id="rfq-rem-' + rfq.id + '" style="display:none"></div>' +
-    '<div id="rfq-edit-' + rfq.id + '" style="display:none"></div></div>';
+  const sc = {'RFQ':'rfq','Negotiating':'badge-negotiating','Converted':'converted','Not Converted':'notconv'};
+  return '<div class="rfq-card" id="rfq-'+rfq.id+'">'+
+    '<div class="rfq-card-header"><span class="rfq-title">'+esc(rfq.material||'—')+'</span>'+
+    '<div class="rfq-actions"><span class="badge badge-'+(sc[rfq.status]||'rfq')+'">'+esc(rfq.status)+'</span>'+
+    '<button class="btn-sm" style="margin-left:4px" onclick="toggleEditRFQ(\''+rfq.id+'\')">Edit</button></div></div>'+
+    '<div class="rfq-meta">'+
+    (rfq.qty?'<span>Qty: <strong>'+esc(rfq.qty)+' '+esc(rfq.unit||'MT')+'</strong></span>':'')+
+    (rfq.expected_price?'<span>Exp: <strong>'+esc(rfq.currency||'USD')+' '+esc(rfq.expected_price)+'</strong></span>':'')+
+    (rfq.deal_closure_price?'<span>Closed: <strong>'+esc(rfq.currency||'USD')+' '+esc(rfq.deal_closure_price)+'</strong></span>':'')+
+    (rfq.attachment_pct?'<span>Att%: <strong>'+esc(rfq.attachment_pct)+'%</strong></span>':'')+
+    (rfq.assigned_to?'<span>POC: <strong>'+esc(rfq.assigned_to)+'</strong></span>':'')+
+    '</div>'+
+    (rfq.not_converted_reason?'<div style="font-size:11px;color:#991b1b;margin-top:4px">Reason: '+esc(rfq.not_converted_reason)+'</div>':'')+
+    (rfq.notes?'<div style="font-size:11px;color:#64748b;margin-top:4px">'+esc(rfq.notes)+'</div>':'')+
+    '<div class="rfq-remarks-toggle" onclick="toggleRFQRemarks(\''+rfq.id+'\')">&#128172; Remarks</div>'+
+    '<div class="rfq-remarks-inner" id="rfq-rem-'+rfq.id+'" style="display:none"></div>'+
+    '<div id="rfq-edit-'+rfq.id+'" style="display:none"></div></div>';
 }
 
 function remarkHtml(r) {
-  return '<div class="remark-item"><p>' + esc(r.remark) + '</p>' +
-    '<div class="remark-meta"><strong>' + esc(r.added_by||'—') + '</strong> &middot; ' + fmtDate(r.created_at) + '</div></div>';
+  return '<div class="remark-item"><p>'+esc(r.remark)+'</p><div class="remark-meta"><strong>'+esc(r.added_by||'—')+'</strong> &middot; '+fmtDate(r.created_at)+'</div></div>';
 }
 
 async function addLeadRemark() {
   const input = document.getElementById('lead-remark-input');
   const text = (input.value||'').trim();
-  if (!text || !currentLead) return;
+  if (!text||!currentLead) return;
   input.value = '';
-  const res = await api('addLeadRemark', { lead_id: currentLead.id, remark: text, by: currentUser });
+  const res = await api('addLeadRemark',{lead_id:currentLead.id,remark:text,by:currentUser});
   if (res.success) {
-    const newRem = { id: res.id, lead_id: currentLead.id, remark: text, added_by: currentUser, created_at: res.created_at };
+    const newRem = {id:res.id,lead_id:currentLead.id,remark:text,added_by:currentUser,created_at:res.created_at};
     remarkCache[currentLead.id] = [newRem].concat(remarkCache[currentLead.id]||[]);
     const list = document.querySelector('.remarks-list');
-    if (list) list.insertAdjacentHTML('afterbegin', remarkHtml(newRem));
+    if (list) list.insertAdjacentHTML('afterbegin',remarkHtml(newRem));
   }
 }
 
 async function toggleRFQRemarks(rfqId) {
-  const el = document.getElementById('rfq-rem-' + rfqId);
-  if (el.style.display === 'none') {
-    el.style.display = 'block';
+  const el = document.getElementById('rfq-rem-'+rfqId);
+  if (el.style.display==='none') {
+    el.style.display='block';
     if (!rfqRemarkCache[rfqId]) {
-      el.innerHTML = '<span class="spinner"></span>';
-      const res = await api('getRFQRemarks', { rfq_id: rfqId });
-      rfqRemarkCache[rfqId] = res.remarks || [];
+      el.innerHTML='<span class="spinner"></span>';
+      const res = await api('getRFQRemarks',{rfq_id:rfqId});
+      rfqRemarkCache[rfqId] = res.remarks||[];
     }
-    el.innerHTML = '<div class="remarks-list" style="max-height:160px">' +
-      (rfqRemarkCache[rfqId].map(remarkHtml).join('') || '<span style="color:#94a3b8;font-size:11px">No remarks.</span>') + '</div>' +
-      '<div class="remark-add"><input id="rfq-rem-input-' + rfqId + '" type="text" placeholder="Add remark&#8230;" onkeydown="if(event.key===\'Enter\')addRFQRemark(\'' + rfqId + '\')" />' +
-      '<button onclick="addRFQRemark(\'' + rfqId + '\')">Add</button></div>';
-  } else {
-    el.style.display = 'none';
-  }
+    el.innerHTML='<div class="remarks-list" style="max-height:160px">'+(rfqRemarkCache[rfqId].map(remarkHtml).join('')||'<span style="color:#94a3b8;font-size:11px">No remarks.</span>')+'</div>'+
+      '<div class="remark-add"><input id="rfq-rem-input-'+rfqId+'" type="text" placeholder="Add remark&#8230;" onkeydown="if(event.key===\'Enter\')addRFQRemark(\''+rfqId+'\')" /><button onclick="addRFQRemark(\''+rfqId+'\')">Add</button></div>';
+  } else { el.style.display='none'; }
 }
 
 async function addRFQRemark(rfqId) {
-  const input = document.getElementById('rfq-rem-input-' + rfqId);
+  const input = document.getElementById('rfq-rem-input-'+rfqId);
   const text = (input.value||'').trim();
   if (!text) return;
-  input.value = '';
-  const res = await api('addRFQRemark', { rfq_id: rfqId, remark: text, by: currentUser });
+  input.value='';
+  const res = await api('addRFQRemark',{rfq_id:rfqId,remark:text,by:currentUser});
   if (res.success) {
-    const newRem = { id: res.id, rfq_id: rfqId, remark: text, added_by: currentUser, created_at: res.created_at };
+    const newRem = {id:res.id,rfq_id:rfqId,remark:text,added_by:currentUser,created_at:res.created_at};
     rfqRemarkCache[rfqId] = [newRem].concat(rfqRemarkCache[rfqId]||[]);
-    const list = document.querySelector('#rfq-rem-' + rfqId + ' .remarks-list');
-    if (list) list.insertAdjacentHTML('afterbegin', remarkHtml(newRem));
+    const list = document.querySelector('#rfq-rem-'+rfqId+' .remarks-list');
+    if (list) list.insertAdjacentHTML('afterbegin',remarkHtml(newRem));
   }
 }
 
 function openEditLead() {
   const l = currentLead;
   const mats = parseMaterials(l.materials||'');
-  const matBtns = Object.entries(MATERIALS).map(function(entry) {
-    const cat = entry[0]; const items = entry[1];
-    return '<div class="mat-category">' + cat + '</div>' +
-      items.map(function(m) {
-        return '<button type="button" class="mat-btn ' + (mats.find(function(x){return x.name===m;}) ? 'selected' : '') + '" onclick="toggleMat(this,\'' + m + '\')">' + m + '</button>';
-      }).join('');
+  const matBtns = Object.entries(MATERIALS).map(function(entry){
+    const cat=entry[0],items=entry[1];
+    return '<div class="mat-category">'+cat+'</div>'+items.map(function(m){return '<button type="button" class="mat-btn '+(mats.find(function(x){return x.name===m;})?'selected':'')+'" onclick="toggleMat(this,\''+m+'\')">'+m+'</button>';}).join('');
   }).join('');
-  const selectedRows = mats.map(function(m) { return matSelectedRow(m.name, m.qty, m.uom); }).join('');
-  const html = '<div style="padding:16px 20px"><h3 style="font-size:13px;font-weight:700;color:#0f3d2e;margin-bottom:12px">Edit Lead</h3>' +
-    '<div class="form-grid">' +
-    '<div class="form-group full"><label>Company Name</label><input id="e-company" value="' + esc(l.company_name||'') + '" /></div>' +
-    '<div class="form-group"><label>Country</label><input id="e-country" value="' + esc(l.country||'') + '" /></div>' +
-    '<div class="form-group"><label>Location</label><input id="e-location" value="' + esc(l.location||'') + '" /></div>' +
-    '<div class="form-group"><label>Stage</label><select id="e-stage">' + STAGES.map(function(s){return '<option'+(s===l.stage?' selected':'')+'>'+s+'</option>';}).join('') + '</select></div>' +
-    '<div class="form-group"><label>Assigned To</label><select id="e-assigned">' + TEAM.map(function(t){return '<option'+(t===l.assigned_to?' selected':'')+'>'+t+'</option>';}).join('') + '</select></div>' +
-    '<div class="form-group"><label>POC Name</label><input id="e-poc" value="' + esc(l.poc_name||'') + '" /></div>' +
-    '<div class="form-group"><label>Phone</label><input id="e-phone" value="' + esc(l.phone||'') + '" /></div>' +
-    '<div class="form-group"><label>Email</label><input id="e-email" value="' + esc(l.email||'') + '" /></div>' +
-    '<div class="form-group full"><label>Notes</label><textarea id="e-notes">' + esc(l.notes||'') + '</textarea></div></div>' +
-    '<div style="margin-top:12px"><label style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:.3px">Materials</label>' +
-    '<div class="mat-grid" style="margin-top:6px">' + matBtns + '</div>' +
-    '<div class="mat-selected-list" id="mat-selected">' + selectedRows + '</div></div>' +
-    '<div class="form-actions">' +
-    '<button class="btn-cancel" onclick="openLead(\'' + l.id + '\')">Cancel</button>' +
-    '<button class="btn-save" onclick="saveEditLead(\'' + l.id + '\')">Save Changes</button></div></div>';
-  document.getElementById('panel-body').innerHTML = html;
+  const selectedRows = mats.map(function(m){return matSelectedRow(m.name,m.qty,m.uom);}).join('');
+  document.getElementById('panel-body').innerHTML = '<div style="padding:16px 20px"><h3 style="font-size:13px;font-weight:700;color:#0f3d2e;margin-bottom:12px">Edit Lead</h3>'+
+    '<div class="form-grid">'+
+    '<div class="form-group full"><label>Company Name</label><input id="e-company" value="'+esc(l.company_name||'')+'" /></div>'+
+    '<div class="form-group"><label>Country</label><input id="e-country" value="'+esc(l.country||'')+'" /></div>'+
+    '<div class="form-group"><label>Location</label><input id="e-location" value="'+esc(l.location||'')+'" /></div>'+
+    '<div class="form-group"><label>Stage</label><select id="e-stage">'+STAGES.map(function(s){return '<option'+(s===l.stage?' selected':'')+'>'+s+'</option>';}).join('')+'</select></div>'+
+    '<div class="form-group"><label>Assigned To</label><select id="e-assigned">'+TEAM.map(function(t){return '<option'+(t===l.assigned_to?' selected':'')+'>'+t+'</option>';}).join('')+'</select></div>'+
+    '<div class="form-group"><label>POC Name</label><input id="e-poc" value="'+esc(l.poc_name||'')+'" /></div>'+
+    '<div class="form-group"><label>Phone</label><input id="e-phone" value="'+esc(l.phone||'')+'" /></div>'+
+    '<div class="form-group"><label>Email</label><input id="e-email" value="'+esc(l.email||'')+'" /></div>'+
+    '<div class="form-group full"><label>Notes</label><textarea id="e-notes">'+esc(l.notes||'')+'</textarea></div></div>'+
+    '<div style="margin-top:12px"><label style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:.3px">Materials</label>'+
+    '<div class="mat-grid" style="margin-top:6px">'+matBtns+'</div>'+
+    '<div class="mat-selected-list" id="mat-selected">'+selectedRows+'</div></div>'+
+    '<div class="form-actions"><button class="btn-cancel" onclick="openLead(\''+l.id+'\')">Cancel</button>'+
+    '<button class="btn-save" onclick="saveEditLead(\''+l.id+'\')">Save Changes</button></div></div>';
 }
 
-function toggleMat(btn, name) {
+function toggleMat(btn,name) {
   btn.classList.toggle('selected');
   const list = document.getElementById('mat-selected');
-  if (btn.classList.contains('selected')) {
-    list.insertAdjacentHTML('beforeend', matSelectedRow(name,'','MT/Month'));
-  } else {
-    const row = list.querySelector('[data-mat="' + name + '"]');
-    if (row) row.remove();
-  }
+  if (btn.classList.contains('selected')) list.insertAdjacentHTML('beforeend',matSelectedRow(name,'','MT/Month'));
+  else { const row=list.querySelector('[data-mat="'+name+'"]'); if(row)row.remove(); }
 }
 
-function matSelectedRow(name, qty, uom) {
-  const uoms = ['MT/Month','MT','MT/Year','MT/Quarter'];
-  return '<div class="mat-row" data-mat="' + esc(name) + '">' +
-    '<span class="mat-chip">' + esc(name) + '</span>' +
-    '<input type="number" placeholder="Qty" value="' + esc(qty||'') + '" style="width:70px" />' +
-    '<select>' + uoms.map(function(u){return '<option'+(u===uom?' selected':'')+'>'+u+'</option>';}).join('') + '</select></div>';
+function matSelectedRow(name,qty,uom) {
+  const uoms=['MT/Month','MT','MT/Year','MT/Quarter'];
+  return '<div class="mat-row" data-mat="'+esc(name)+'"><span class="mat-chip">'+esc(name)+'</span>'+
+    '<input type="number" placeholder="Qty" value="'+esc(qty||'')+'" style="width:70px" />'+
+    '<select>'+uoms.map(function(u){return '<option'+(u===uom?' selected':'')+'>'+u+'</option>';}).join('')+'</select></div>';
 }
 
 function collectMaterials() {
-  const rows = document.querySelectorAll('#mat-selected [data-mat]');
-  return Array.from(rows).map(function(r) {
-    return { name: r.dataset.mat, qty: r.querySelector('input').value.trim(), uom: r.querySelector('select').value };
+  return Array.from(document.querySelectorAll('#mat-selected [data-mat]')).map(function(r){
+    return {name:r.dataset.mat,qty:r.querySelector('input').value.trim(),uom:r.querySelector('select').value};
   });
 }
 
 async function saveEditLead(id) {
   const mats = collectMaterials();
-  const payload = {
-    id: id,
-    company_name: document.getElementById('e-company').value.trim(),
-    country: document.getElementById('e-country').value.trim(),
-    location: document.getElementById('e-location').value.trim(),
-    stage: document.getElementById('e-stage').value,
-    assigned_to: document.getElementById('e-assigned').value,
-    poc_name: document.getElementById('e-poc').value.trim(),
-    phone: document.getElementById('e-phone').value.trim(),
-    email: document.getElementById('e-email').value.trim(),
-    notes: document.getElementById('e-notes').value.trim(),
-    materials: serializeMaterials(mats),
-    by: currentUser,
-  };
-  const res = await api('updateLead', payload);
-  if (res.success) {
-    Object.assign(currentLead, payload);
-    const idx = allLeads.findIndex(function(l){return l.id===id;});
-    if (idx >= 0) Object.assign(allLeads[idx], payload);
-    openLead(id);
-    applyFilters();
-  } else {
-    alert('Error: ' + (res.error||'Unknown'));
-  }
+  const payload = {id,company_name:document.getElementById('e-company').value.trim(),country:document.getElementById('e-country').value.trim(),location:document.getElementById('e-location').value.trim(),stage:document.getElementById('e-stage').value,assigned_to:document.getElementById('e-assigned').value,poc_name:document.getElementById('e-poc').value.trim(),phone:document.getElementById('e-phone').value.trim(),email:document.getElementById('e-email').value.trim(),notes:document.getElementById('e-notes').value.trim(),materials:serializeMaterials(mats),by:currentUser};
+  const res = await api('updateLead',payload);
+  if (res.success) { Object.assign(currentLead,payload); const idx=allLeads.findIndex(function(l){return l.id===id;}); if(idx>=0)Object.assign(allLeads[idx],payload); openLead(id); applyFilters(); }
+  else alert('Error: '+(res.error||'Unknown'));
 }
 
 function openAddRFQ() {
   const matOptions = ALL_MATERIALS.map(function(m){return '<option>'+m+'</option>';}).join('');
-  const html = '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px;margin-bottom:12px" id="add-rfq-form">' +
-    '<div style="font-size:12px;font-weight:700;color:#0f3d2e;margin-bottom:8px">New RFQ</div>' +
-    '<div class="form-grid three">' +
-    '<div class="form-group"><label>Material</label><select id="rfq-material"><option value="">Select&#8230;</option>' + matOptions + '</select></div>' +
-    '<div class="form-group"><label>Qty</label><input type="number" id="rfq-qty" placeholder="e.g. 500" /></div>' +
-    '<div class="form-group"><label>Unit</label><select id="rfq-unit">' + UNITS.map(function(u){return '<option>'+u+'</option>';}).join('') + '</select></div>' +
-    '<div class="form-group"><label>Currency</label><select id="rfq-currency">' + CURRENCIES.map(function(c){return '<option>'+c+'</option>';}).join('') + '</select></div>' +
-    '<div class="form-group"><label>Exp. Price / MT</label><input type="number" id="rfq-exp-price" /></div>' +
-    '<div class="form-group"><label>Closure Price / MT</label><input type="number" id="rfq-close-price" /></div>' +
-    '<div class="form-group"><label>Attachment %</label><input type="number" id="rfq-att-pct" min="0" max="100" /></div>' +
-    '<div class="form-group"><label>Status</label><select id="rfq-status">' + RFQ_STATUSES.map(function(s){return '<option>'+s+'</option>';}).join('') + '</select></div>' +
-    '<div class="form-group"><label>Assigned To</label><select id="rfq-assigned"><option value="">&#8212;</option>' + TEAM.map(function(t){return '<option>'+t+'</option>';}).join('') + '</select></div>' +
-    '<div class="form-group full"><label>Not Converted Reason</label><input id="rfq-ncr" /></div>' +
-    '<div class="form-group full"><label>Notes</label><textarea id="rfq-notes" rows="2"></textarea></div></div>' +
-    '<div class="form-actions"><button class="btn-cancel" onclick="cancelAddRFQ()">Cancel</button>' +
-    '<button class="btn-save" onclick="saveAddRFQ()">Save RFQ</button></div></div>';
-  document.getElementById('rfq-list').insertAdjacentHTML('afterbegin', html);
-}
-
-function cancelAddRFQ() {
-  const f = document.getElementById('add-rfq-form');
-  if (f) f.remove();
+  document.getElementById('rfq-list').insertAdjacentHTML('afterbegin','<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px;margin-bottom:12px" id="add-rfq-form">'+
+    '<div style="font-size:12px;font-weight:700;color:#0f3d2e;margin-bottom:8px">New RFQ</div>'+
+    '<div class="form-grid three">'+
+    '<div class="form-group"><label>Material</label><select id="rfq-material"><option value="">Select&#8230;</option>'+matOptions+'</select></div>'+
+    '<div class="form-group"><label>Qty</label><input type="number" id="rfq-qty" /></div>'+
+    '<div class="form-group"><label>Unit</label><select id="rfq-unit">'+UNITS.map(function(u){return '<option>'+u+'</option>';}).join('')+'</select></div>'+
+    '<div class="form-group"><label>Currency</label><select id="rfq-currency">'+CURRENCIES.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select></div>'+
+    '<div class="form-group"><label>Exp. Price/MT</label><input type="number" id="rfq-exp-price" /></div>'+
+    '<div class="form-group"><label>Closure Price/MT</label><input type="number" id="rfq-close-price" /></div>'+
+    '<div class="form-group"><label>Attachment %</label><input type="number" id="rfq-att-pct" min="0" max="100" /></div>'+
+    '<div class="form-group"><label>Status</label><select id="rfq-status">'+RFQ_STATUSES.map(function(s){return '<option>'+s+'</option>';}).join('')+'</select></div>'+
+    '<div class="form-group"><label>Assigned To</label><select id="rfq-assigned"><option value="">&#8212;</option>'+TEAM.map(function(t){return '<option>'+t+'</option>';}).join('')+'</select></div>'+
+    '<div class="form-group full"><label>Not Converted Reason</label><input id="rfq-ncr" /></div>'+
+    '<div class="form-group full"><label>Notes</label><textarea id="rfq-notes" rows="2"></textarea></div></div>'+
+    '<div class="form-actions"><button class="btn-cancel" onclick="document.getElementById(\'add-rfq-form\').remove()">Cancel</button>'+
+    '<button class="btn-save" onclick="saveAddRFQ()">Save RFQ</button></div></div>');
 }
 
 async function saveAddRFQ() {
-  const payload = {
-    lead_id: currentLead.id,
-    material: document.getElementById('rfq-material').value,
-    qty: document.getElementById('rfq-qty').value || null,
-    unit: document.getElementById('rfq-unit').value,
-    currency: document.getElementById('rfq-currency').value,
-    expected_price: document.getElementById('rfq-exp-price').value || null,
-    deal_closure_price: document.getElementById('rfq-close-price').value || null,
-    attachment_pct: document.getElementById('rfq-att-pct').value || null,
-    status: document.getElementById('rfq-status').value,
-    assigned_to: document.getElementById('rfq-assigned').value,
-    not_converted_reason: document.getElementById('rfq-ncr').value.trim(),
-    notes: document.getElementById('rfq-notes').value.trim(),
-    by: currentUser,
-  };
-  const res = await api('addRFQ', payload);
-  if (res.success) {
-    payload.id = res.id;
-    rfqCache[currentLead.id] = [payload].concat(rfqCache[currentLead.id]||[]);
-    const f = document.getElementById('add-rfq-form');
-    if (f) f.remove();
-    document.getElementById('rfq-list').insertAdjacentHTML('afterbegin', rfqCard(payload));
-  } else {
-    alert('Error: ' + res.error);
-  }
+  const payload = {lead_id:currentLead.id,material:document.getElementById('rfq-material').value,qty:document.getElementById('rfq-qty').value||null,unit:document.getElementById('rfq-unit').value,currency:document.getElementById('rfq-currency').value,expected_price:document.getElementById('rfq-exp-price').value||null,deal_closure_price:document.getElementById('rfq-close-price').value||null,attachment_pct:document.getElementById('rfq-att-pct').value||null,status:document.getElementById('rfq-status').value,assigned_to:document.getElementById('rfq-assigned').value,not_converted_reason:document.getElementById('rfq-ncr').value.trim(),notes:document.getElementById('rfq-notes').value.trim(),by:currentUser};
+  const res = await api('addRFQ',payload);
+  if (res.success) { payload.id=res.id; rfqCache[currentLead.id]=[payload].concat(rfqCache[currentLead.id]||[]); const f=document.getElementById('add-rfq-form'); if(f)f.remove(); document.getElementById('rfq-list').insertAdjacentHTML('afterbegin',rfqCard(payload)); }
+  else alert('Error: '+res.error);
 }
 
 function toggleEditRFQ(rfqId) {
-  const el = document.getElementById('rfq-edit-' + rfqId);
-  if (el.style.display !== 'none') { el.style.display = 'none'; return; }
+  const el = document.getElementById('rfq-edit-'+rfqId);
+  if (el.style.display!=='none') { el.style.display='none'; return; }
   const rfq = (rfqCache[currentLead&&currentLead.id]||[]).find(function(r){return r.id===rfqId;});
   if (!rfq) return;
   const matOptions = ALL_MATERIALS.map(function(m){return '<option'+(m===rfq.material?' selected':'')+'>'+m+'</option>';}).join('');
-  el.innerHTML = '<div style="border-top:1px solid #e2e8f0;margin-top:8px;padding-top:8px">' +
-    '<div class="form-grid three">' +
-    '<div class="form-group"><label>Material</label><select id="re-mat-' + rfqId + '"><option value="">&#8212;</option>' + matOptions + '</select></div>' +
-    '<div class="form-group"><label>Qty</label><input type="number" id="re-qty-' + rfqId + '" value="' + esc(rfq.qty||'') + '" /></div>' +
-    '<div class="form-group"><label>Unit</label><select id="re-unit-' + rfqId + '">' + UNITS.map(function(u){return '<option'+(u===rfq.unit?' selected':'')+'>'+u+'</option>';}).join('') + '</select></div>' +
-    '<div class="form-group"><label>Currency</label><select id="re-cur-' + rfqId + '">' + CURRENCIES.map(function(c){return '<option'+(c===rfq.currency?' selected':'')+'>'+c+'</option>';}).join('') + '</select></div>' +
-    '<div class="form-group"><label>Exp. Price</label><input type="number" id="re-exp-' + rfqId + '" value="' + esc(rfq.expected_price||'') + '" /></div>' +
-    '<div class="form-group"><label>Closure Price</label><input type="number" id="re-close-' + rfqId + '" value="' + esc(rfq.deal_closure_price||'') + '" /></div>' +
-    '<div class="form-group"><label>Att %</label><input type="number" id="re-att-' + rfqId + '" value="' + esc(rfq.attachment_pct||'') + '" min="0" max="100" /></div>' +
-    '<div class="form-group"><label>Status</label><select id="re-status-' + rfqId + '">' + RFQ_STATUSES.map(function(s){return '<option'+(s===rfq.status?' selected':'')+'>'+s+'</option>';}).join('') + '</select></div>' +
-    '<div class="form-group"><label>Assigned To</label><select id="re-assigned-' + rfqId + '"><option value="">&#8212;</option>' + TEAM.map(function(t){return '<option'+(t===rfq.assigned_to?' selected':'')+'>'+t+'</option>';}).join('') + '</select></div>' +
-    '<div class="form-group full"><label>Not Converted Reason</label><input id="re-ncr-' + rfqId + '" value="' + esc(rfq.not_converted_reason||'') + '" /></div>' +
-    '<div class="form-group full"><label>Notes</label><textarea id="re-notes-' + rfqId + '">' + esc(rfq.notes||'') + '</textarea></div></div>' +
-    '<div class="form-actions"><button class="btn-cancel" onclick="toggleEditRFQ(\'' + rfqId + '\')">Cancel</button>' +
-    '<button class="btn-save" onclick="saveEditRFQ(\'' + rfqId + '\')">Save</button></div></div>';
-  el.style.display = 'block';
+  el.innerHTML='<div style="border-top:1px solid #e2e8f0;margin-top:8px;padding-top:8px"><div class="form-grid three">'+
+    '<div class="form-group"><label>Material</label><select id="re-mat-'+rfqId+'"><option value="">&#8212;</option>'+matOptions+'</select></div>'+
+    '<div class="form-group"><label>Qty</label><input type="number" id="re-qty-'+rfqId+'" value="'+esc(rfq.qty||'')+'" /></div>'+
+    '<div class="form-group"><label>Unit</label><select id="re-unit-'+rfqId+'">'+UNITS.map(function(u){return '<option'+(u===rfq.unit?' selected':'')+'>'+u+'</option>';}).join('')+'</select></div>'+
+    '<div class="form-group"><label>Currency</label><select id="re-cur-'+rfqId+'">'+CURRENCIES.map(function(c){return '<option'+(c===rfq.currency?' selected':'')+'>'+c+'</option>';}).join('')+'</select></div>'+
+    '<div class="form-group"><label>Exp. Price</label><input type="number" id="re-exp-'+rfqId+'" value="'+esc(rfq.expected_price||'')+'" /></div>'+
+    '<div class="form-group"><label>Closure Price</label><input type="number" id="re-close-'+rfqId+'" value="'+esc(rfq.deal_closure_price||'')+'" /></div>'+
+    '<div class="form-group"><label>Att %</label><input type="number" id="re-att-'+rfqId+'" value="'+esc(rfq.attachment_pct||'')+'" /></div>'+
+    '<div class="form-group"><label>Status</label><select id="re-status-'+rfqId+'">'+RFQ_STATUSES.map(function(s){return '<option'+(s===rfq.status?' selected':'')+'>'+s+'</option>';}).join('')+'</select></div>'+
+    '<div class="form-group"><label>Assigned To</label><select id="re-assigned-'+rfqId+'"><option value="">&#8212;</option>'+TEAM.map(function(t){return '<option'+(t===rfq.assigned_to?' selected':'')+'>'+t+'</option>';}).join('')+'</select></div>'+
+    '<div class="form-group full"><label>Not Converted Reason</label><input id="re-ncr-'+rfqId+'" value="'+esc(rfq.not_converted_reason||'')+'" /></div>'+
+    '<div class="form-group full"><label>Notes</label><textarea id="re-notes-'+rfqId+'">'+esc(rfq.notes||'')+'</textarea></div></div>'+
+    '<div class="form-actions"><button class="btn-cancel" onclick="toggleEditRFQ(\''+rfqId+'\')">Cancel</button>'+
+    '<button class="btn-save" onclick="saveEditRFQ(\''+rfqId+'\')">Save</button></div></div>';
+  el.style.display='block';
 }
 
 async function saveEditRFQ(rfqId) {
-  const payload = {
-    id: rfqId,
-    material: document.getElementById('re-mat-' + rfqId).value,
-    qty: document.getElementById('re-qty-' + rfqId).value || null,
-    unit: document.getElementById('re-unit-' + rfqId).value,
-    currency: document.getElementById('re-cur-' + rfqId).value,
-    expected_price: document.getElementById('re-exp-' + rfqId).value || null,
-    deal_closure_price: document.getElementById('re-close-' + rfqId).value || null,
-    attachment_pct: document.getElementById('re-att-' + rfqId).value || null,
-    status: document.getElementById('re-status-' + rfqId).value,
-    assigned_to: document.getElementById('re-assigned-' + rfqId).value,
-    not_converted_reason: document.getElementById('re-ncr-' + rfqId).value.trim(),
-    notes: document.getElementById('re-notes-' + rfqId).value.trim(),
-  };
-  const res = await api('updateRFQ', payload);
-  if (res.success) {
-    const cache = rfqCache[currentLead.id];
-    const idx = cache.findIndex(function(r){return r.id===rfqId;});
-    if (idx >= 0) Object.assign(cache[idx], payload);
-    const card = document.getElementById('rfq-' + rfqId);
-    if (card) card.outerHTML = rfqCard(cache[idx]);
-  } else {
-    alert('Error: ' + res.error);
-  }
+  const payload = {id:rfqId,material:document.getElementById('re-mat-'+rfqId).value,qty:document.getElementById('re-qty-'+rfqId).value||null,unit:document.getElementById('re-unit-'+rfqId).value,currency:document.getElementById('re-cur-'+rfqId).value,expected_price:document.getElementById('re-exp-'+rfqId).value||null,deal_closure_price:document.getElementById('re-close-'+rfqId).value||null,attachment_pct:document.getElementById('re-att-'+rfqId).value||null,status:document.getElementById('re-status-'+rfqId).value,assigned_to:document.getElementById('re-assigned-'+rfqId).value,not_converted_reason:document.getElementById('re-ncr-'+rfqId).value.trim(),notes:document.getElementById('re-notes-'+rfqId).value.trim()};
+  const res = await api('updateRFQ',payload);
+  if (res.success) { const cache=rfqCache[currentLead.id]; const idx=cache.findIndex(function(r){return r.id===rfqId;}); if(idx>=0)Object.assign(cache[idx],payload); const card=document.getElementById('rfq-'+rfqId); if(card)card.outerHTML=rfqCard(cache[idx]); }
+  else alert('Error: '+res.error);
 }
 
 function openAddModal() {
   document.getElementById('add-modal').classList.add('open');
-  document.getElementById('add-error').style.display = 'none';
+  document.getElementById('add-error').style.display='none';
   const btnsEl = document.getElementById('a-mat-btns');
-  btnsEl.innerHTML = Object.entries(MATERIALS).map(function(entry) {
-    const cat = entry[0]; const items = entry[1];
-    return '<span style="width:100%;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-top:4px">' + cat + '</span>' +
-      items.map(function(m) {
-        return '<button type="button" class="mat-btn" onclick="toggleAddMat(this,\'' + m + '\')">' + m + '</button>';
-      }).join('');
+  btnsEl.innerHTML = Object.entries(MATERIALS).map(function(entry){
+    const cat=entry[0],items=entry[1];
+    return '<span style="width:100%;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-top:4px">'+cat+'</span>'+
+      items.map(function(m){return '<button type="button" class="mat-btn" onclick="toggleAddMat(this,\''+m+'\')">'+m+'</button>';}).join('');
   }).join('');
-  document.getElementById('a-mat-selected').innerHTML = '';
+  document.getElementById('a-mat-selected').innerHTML='';
   document.getElementById('a-company').focus();
 }
 
-function toggleAddMat(btn, name) {
+function toggleAddMat(btn,name) {
   btn.classList.toggle('selected');
   const list = document.getElementById('a-mat-selected');
-  if (btn.classList.contains('selected')) {
-    list.insertAdjacentHTML('beforeend', matSelectedRow(name, '', 'MT/Month'));
-  } else {
-    const row = list.querySelector('[data-mat="' + name + '"]');
-    if (row) row.remove();
-  }
+  if (btn.classList.contains('selected')) list.insertAdjacentHTML('beforeend',matSelectedRow(name,'','MT/Month'));
+  else { const row=list.querySelector('[data-mat="'+name+'"]'); if(row)row.remove(); }
 }
 
 function closeAddModal() {
   document.getElementById('add-modal').classList.remove('open');
-  ['a-company','a-country','a-location','a-poc','a-phone','a-email','a-notes'].forEach(function(id){
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('a-mat-btns').innerHTML = '';
-  document.getElementById('a-mat-selected').innerHTML = '';
+  ['a-company','a-country','a-location','a-poc','a-phone','a-email','a-notes'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('a-mat-btns').innerHTML='';
+  document.getElementById('a-mat-selected').innerHTML='';
 }
 
 async function saveLead() {
   const company = document.getElementById('a-company').value.trim();
   const country = document.getElementById('a-country').value.trim();
   const errEl = document.getElementById('add-error');
-  errEl.style.display = 'none';
-  if (!company || !country) {
-    errEl.textContent = 'Company name and country are required.';
-    errEl.style.display = 'block';
-    return;
-  }
+  errEl.style.display='none';
+  if (!company||!country) { errEl.textContent='Company name and country are required.'; errEl.style.display='block'; return; }
   const btn = document.getElementById('add-save-btn');
-  btn.disabled = true; btn.textContent = 'Saving...';
-  const matRows = document.querySelectorAll('#a-mat-selected [data-mat]');
-  const mats = Array.from(matRows).map(function(r) {
-    return { name: r.dataset.mat, qty: r.querySelector('input').value.trim(), uom: r.querySelector('select').value };
-  });
+  btn.disabled=true; btn.textContent='Saving...';
+  const mats = Array.from(document.querySelectorAll('#a-mat-selected [data-mat]')).map(function(r){return {name:r.dataset.mat,qty:r.querySelector('input').value.trim(),uom:r.querySelector('select').value};});
   try {
-    const res = await api('addLead', {
-      type: currentTab, company_name: company, country: country,
-      location: document.getElementById('a-location').value.trim(),
-      stage: document.getElementById('a-stage').value,
-      assigned_to: document.getElementById('a-assigned').value,
-      poc_name: document.getElementById('a-poc').value.trim(),
-      phone: document.getElementById('a-phone').value.trim(),
-      email: document.getElementById('a-email').value.trim(),
-      notes: document.getElementById('a-notes').value.trim(),
-      materials: serializeMaterials(mats),
-      by: currentUser,
-    });
-    btn.disabled = false; btn.textContent = 'Add Lead';
-    if (res.error === 'DUPLICATE') {
-      errEl.textContent = 'Duplicate: "' + company + '" from ' + country + ' already exists.';
-      errEl.style.display = 'block';
-      return;
-    }
-    if (res.error) {
-      errEl.textContent = 'Error: ' + res.error;
-      errEl.style.display = 'block';
-      return;
-    }
-    closeAddModal();
-    await loadLeads();
-  } catch(e) {
-    btn.disabled = false; btn.textContent = 'Add Lead';
-    errEl.textContent = 'Network error: ' + e.message;
-    errEl.style.display = 'block';
-  }
+    const res = await api('addLead',{type:currentTab,company_name:company,country,location:document.getElementById('a-location').value.trim(),stage:document.getElementById('a-stage').value,assigned_to:document.getElementById('a-assigned').value,poc_name:document.getElementById('a-poc').value.trim(),phone:document.getElementById('a-phone').value.trim(),email:document.getElementById('a-email').value.trim(),notes:document.getElementById('a-notes').value.trim(),materials:serializeMaterials(mats),by:currentUser});
+    btn.disabled=false; btn.textContent='Add Lead';
+    if (res.error==='DUPLICATE') { errEl.textContent='Duplicate: "'+company+'" from '+country+' already exists.'; errEl.style.display='block'; return; }
+    if (res.error) { errEl.textContent='Error: '+res.error; errEl.style.display='block'; return; }
+    closeAddModal(); await loadLeads();
+  } catch(e) { btn.disabled=false; btn.textContent='Add Lead'; errEl.textContent='Network error: '+e.message; errEl.style.display='block'; }
 }
 
 function switchTab(tab) {
   currentTab = tab;
-  ['buyer','supplier'].forEach(function(t) {
-    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
-  });
-  clearFilters();
-  loadLeads();
+  const isRFQ = tab==='rfqs';
+  ['buyer','supplier','rfqs'].forEach(function(t){ document.getElementById('tab-'+t).classList.toggle('active',t===tab); });
+  document.getElementById('filters').style.display = isRFQ?'none':'';
+  document.getElementById('leads-table-wrap').style.display = isRFQ?'none':'';
+  document.getElementById('rfq-filters').style.display = isRFQ?'':'none';
+  document.getElementById('rfq-table-wrap').style.display = isRFQ?'':'none';
+  if (isRFQ) loadAllRFQs(); else { clearFilters(); loadLeads(); }
 }
 
 function closePanel() {
@@ -847,26 +667,22 @@ function closePanel() {
 }
 
 function esc(str) {
-  if (str === null || str === undefined) return '';
+  if (str===null||str===undefined) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function fmtDate(val) {
   if (!val) return '—';
-  try { return new Date(val).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }); }
-  catch(e) { return '—'; }
+  try { return new Date(val).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); } catch(e) { return '—'; }
 }
 
 function parseMaterials(str) {
   if (!str) return [];
-  return str.split(',').map(function(s) {
-    const parts = s.trim().split(':');
-    return { name: parts[0]||'', qty: parts[1]||'', uom: parts[2]||'MT/Month' };
-  }).filter(function(m){ return m.name; });
+  return str.split(',').map(function(s){ const p=s.trim().split(':'); return {name:p[0]||'',qty:p[1]||'',uom:p[2]||'MT/Month'}; }).filter(function(m){return m.name;});
 }
 
 function serializeMaterials(mats) {
-  return mats.map(function(m){ return m.name + ':' + (m.qty||'') + ':' + (m.uom||'MT/Month'); }).join(',');
+  return mats.map(function(m){return m.name+':'+(m.qty||'')+':'+(m.uom||'MT/Month');}).join(',');
 }
 </script>
 </body>
