@@ -884,19 +884,21 @@ function mkChart(id,type,labels,data,colors,extraOpts) {
 }
 
 function switchTab(tab) {
-  currentTab=tab;
-  const isDash=tab==='dashboard', isRFQ=tab==='rfqs';
-  ['buyer','supplier','rfqs','dashboard'].forEach(function(t){document.getElementById('tab-'+t).classList.toggle('active',t===tab);});
-  document.getElementById('filters').style.display=(!isRFQ&&!isDash)?'':'none';
-  document.getElementById('leads-table-wrap').style.display=(!isRFQ&&!isDash)?'':'none';
-  document.getElementById('rfq-filters').style.display=isRFQ?'':'none';
-  document.getElementById('rfq-table-wrap').style.display=isRFQ?'':'none';
-  document.getElementById('dashboard-wrap').style.display=isDash?'':'none';
+  currentTab = tab;
+  const isDash = tab==='dashboard';
+  const isRFQ = tab==='rfqs';
+  ['buyer','supplier','rfqs','dashboard'].forEach(function(t){
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+  });
+  document.getElementById('filters').style.display = (!isRFQ&&!isDash)?'flex':'none';
+  document.getElementById('leads-table-wrap').style.display = (!isRFQ&&!isDash)?'block':'none';
+  document.getElementById('rfq-filters').style.display = isRFQ?'flex':'none';
+  document.getElementById('rfq-table-wrap').style.display = isRFQ?'block':'none';
+  document.getElementById('dashboard-wrap').style.display = isDash?'block':'none';
   if (isDash) loadDashboard();
   else if (isRFQ) loadAllRFQs();
   else { clearFilters(); loadLeads(); }
 }
-
 function closePanel() {
   document.getElementById('overlay').classList.remove('open');
   document.getElementById('panel').classList.remove('open');
