@@ -314,7 +314,7 @@ const ALLOWED_DOMAIN = 'recykal.com';
 let currentToken = '';
 const TEAM = ['Iqbal Naseem','Prafulla Chandra','Rounak Jindal','Mayank Dixit'];
 const MATERIALS = {
-  Copper:    ['Milberry','Candy','Birch','No 1 Copper','No 2 Copper','Cathode','Wire','Utensil','Berry','Barley'],
+  Copper:    ['Milberry','Candy','Birch','No 1 Copper','No 2 Copper','Cathode','Wire','Utensil','Berry'],
   Brass:     ['Honey','Label','Hairwire','Ebony','White','Yellow'],
   Aluminium: ['UBC','Tense','TT','Extrusion','Zorba','Wire'],
 };
@@ -515,6 +515,9 @@ async function addLeadRemark() {
     remarkCache[currentLead.id]=[newRem].concat(remarkCache[currentLead.id]||[]);
     const list = document.querySelector('.remarks-list');
     if (list) list.insertAdjacentHTML('afterbegin',remarkHtml(newRem));
+  } else {
+    alert('Could not save remark: '+(res.error||'Unknown error'));
+    input.value = text;
   }
 }
 
@@ -537,12 +540,31 @@ async function addRFQRemark(rfqId) {
   const text = (input.value||'').trim();
   if (!text) return;
   input.value='';
-  const res = await api('addRFQRemark',{rfq_id:rfqId,remark:text,by:currentUser});
-  if (res.success) {
-    const newRem = {id:res.id,rfq_id:rfqId,remark:text,added_by:currentUser,created_at:res.created_at};
-    rfqRemarkCache[rfqId]=[newRem].concat(rfqRemarkCache[rfqId]||[]);
-    const list = document.querySelector('#rfq-rem-'+rfqId+' .remarks-list');
-    if (list) list.insertAdjacentHTML('afterbegin',remarkHtml(newRem));
+  try {
+    const res = await api('addRFQRemark',{rfq_id:rfqId,remark:text,by:currentUser});
+    if (res.success) {
+      const newRem = {id:res.id,rfq_id:rfqId,remark:text,added_by:currentUser,created_at:res.created_at};
+      rfqRemarkCache[rfqId]=[newRem].concat(rfqRemarkCache[rfqId]||[]);
+      const container = document.getElementById('rfq-rem-'+rfqId);
+      if (container) {
+        let list = container.querySelector('.remarks-list');
+        if (!list) {
+          const addDiv = container.querySelector('.remark-add');
+          const newList = document.createElement('div');
+          newList.className = 'remarks-list';
+          newList.style.maxHeight = '160px';
+          container.insertBefore(newList, addDiv);
+          list = newList;
+        }
+        list.insertAdjacentHTML('afterbegin', remarkHtml(newRem));
+      }
+    } else {
+      alert('Could not save remark: ' + (res.error||'Unknown error'));
+      input.value = text;
+    }
+  } catch(e) {
+    alert('Network error saving remark: ' + e.message);
+    input.value = text;
   }
 }
 
@@ -884,21 +906,19 @@ function mkChart(id,type,labels,data,colors,extraOpts) {
 }
 
 function switchTab(tab) {
-  currentTab = tab;
-  const isDash = tab==='dashboard';
-  const isRFQ = tab==='rfqs';
-  ['buyer','supplier','rfqs','dashboard'].forEach(function(t){
-    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
-  });
-  document.getElementById('filters').style.display = (!isRFQ&&!isDash)?'flex':'none';
-  document.getElementById('leads-table-wrap').style.display = (!isRFQ&&!isDash)?'block':'none';
-  document.getElementById('rfq-filters').style.display = isRFQ?'flex':'none';
-  document.getElementById('rfq-table-wrap').style.display = isRFQ?'block':'none';
-  document.getElementById('dashboard-wrap').style.display = isDash?'block':'none';
+  currentTab=tab;
+  const isDash=tab==='dashboard', isRFQ=tab==='rfqs';
+  ['buyer','supplier','rfqs','dashboard'].forEach(function(t){document.getElementById('tab-'+t).classList.toggle('active',t===tab);});
+  document.getElementById('filters').style.display=(!isRFQ&&!isDash)?'flex':'none';
+  document.getElementById('leads-table-wrap').style.display=(!isRFQ&&!isDash)?'block':'none';
+  document.getElementById('rfq-filters').style.display=isRFQ?'flex':'none';
+  document.getElementById('rfq-table-wrap').style.display=isRFQ?'block':'none';
+  document.getElementById('dashboard-wrap').style.display=isDash?'block':'none';
   if (isDash) loadDashboard();
   else if (isRFQ) loadAllRFQs();
   else { clearFilters(); loadLeads(); }
 }
+
 function closePanel() {
   document.getElementById('overlay').classList.remove('open');
   document.getElementById('panel').classList.remove('open');
