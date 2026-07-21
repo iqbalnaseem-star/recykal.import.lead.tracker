@@ -112,6 +112,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .info-row { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: #475569; margin-bottom: 4px; }
   .info-row span strong { color: #1a202c; }
+
   /* ── Dashboard ── */
   #dashboard-wrap { display: none; padding: 20px; }
   .dash-controls { background: #fff; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
@@ -136,29 +137,47 @@
 </head>
 <body>
 
+<!-- GOOGLE SIGN-IN PAGE -->
 <div id="signin-page" style="display:flex;position:fixed;inset:0;background:#f0f4f8;z-index:500;align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:12px;padding:40px 48px;box-shadow:0 4px 24px rgba(0,0,0,.1);text-align:center;max-width:380px;width:90%;">
     <div style="font-size:28px;margin-bottom:8px;">&#127807;</div>
     <h2 style="font-size:20px;font-weight:700;color:#0f3d2e;margin-bottom:4px;">Recykal Lead Tracker</h2>
     <p style="font-size:13px;color:#64748b;margin-bottom:28px;">Sign in with your @recykal.com account</p>
-    <div id="g_id_onload" data-client_id="990583974585-urcqsg4igf0m4r42h3srhr7qeodk6uk0.apps.googleusercontent.com" data-callback="handleCredentialResponse" data-auto_prompt="true"></div>
-    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left"></div>
+    <div id="g_id_onload"
+         data-client_id="990583974585-urcqsg4igf0m4r42h3srhr7qeodk6uk0.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="true">
+    </div>
+    <div class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+    </div>
     <div id="signin-error" style="display:none;margin-top:16px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;padding:10px 14px;color:#991b1b;font-size:12px;"></div>
   </div>
 </div>
 
+<!-- TOP BAR -->
 <div class="topbar">
   <div class="topbar-logo">&#127807; <span>Recykal</span> Import Lead Tracker</div>
-  <div class="topbar-user">Logged in as <strong id="user-display">&#8212;</strong><button class="btn-link" onclick="signOut()">Sign Out</button></div>
+  <div class="topbar-user">
+    Logged in as <strong id="user-display">&#8212;</strong>
+    <button class="btn-link" onclick="signOut()">Sign Out</button>
+  </div>
 </div>
 
+<!-- TABS -->
 <div class="tabs">
-  <div class="tab active" id="tab-buyer" onclick="switchTab('buyer')">Buyers</div>
-  <div class="tab" id="tab-supplier" onclick="switchTab('supplier')">Suppliers</div>
-  <div class="tab" id="tab-rfqs" onclick="switchTab('rfqs')">All RFQs</div>
-  <div class="tab" id="tab-dashboard" onclick="switchTab('dashboard')">Dashboard</div>
+  <div class="tab active" id="tab-buyer"    onclick="switchTab('buyer')">Buyers</div>
+  <div class="tab"        id="tab-supplier" onclick="switchTab('supplier')">Suppliers</div>
+  <div class="tab"        id="tab-rfqs"     onclick="switchTab('rfqs')">All RFQs</div>
+  <div class="tab"        id="tab-dashboard" onclick="switchTab('dashboard')">Dashboard</div>
 </div>
 
+<!-- LEAD FILTERS -->
 <div class="filters" id="filters">
   <div class="filter-group"><label>Search</label><input type="text" id="f-search" placeholder="Company / country..." oninput="applyFilters()" /></div>
   <div class="filter-group"><label>Stage</label>
@@ -183,6 +202,7 @@
   <button class="btn-add" onclick="openAddModal()">+ Add Lead</button>
 </div>
 
+<!-- RFQ FILTERS -->
 <div class="filters" id="rfq-filters" style="display:none">
   <div class="filter-group"><label>Status</label>
     <select id="rf-status" onchange="applyRFQFilters()">
@@ -209,6 +229,7 @@
   <button class="btn-clear" onclick="clearRFQFilters()">Clear</button>
 </div>
 
+<!-- RFQ TABLE -->
 <div class="table-wrap" id="rfq-table-wrap" style="display:none">
   <table>
     <thead><tr>
@@ -216,20 +237,26 @@
       <th>Qty</th><th>Exp Price</th><th>Closure Price</th>
       <th>Att%</th><th>Status</th><th>Assigned To</th><th>Updated</th>
     </tr></thead>
-    <tbody id="rfq-table-body"><tr class="loading-row"><td colspan="11"><span class="spinner"></span> Loading&#8230;</td></tr></tbody>
+    <tbody id="rfq-table-body">
+      <tr class="loading-row"><td colspan="11"><span class="spinner"></span> Loading&#8230;</td></tr>
+    </tbody>
   </table>
 </div>
 
+<!-- LEADS TABLE -->
 <div class="table-wrap" id="leads-table-wrap">
   <table>
     <thead><tr>
       <th>Company</th><th>Country</th><th>Stage</th><th>Assigned To</th>
       <th>Materials</th><th>POC</th><th>RFQs</th><th>Updated</th>
     </tr></thead>
-    <tbody id="leads-body"><tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading&#8230;</td></tr></tbody>
+    <tbody id="leads-body">
+      <tr class="loading-row"><td colspan="8"><span class="spinner"></span> Loading&#8230;</td></tr>
+    </tbody>
   </table>
 </div>
 
+<!-- DASHBOARD -->
 <div id="dashboard-wrap">
   <div class="dash-controls">
     <div class="filter-group"><label>Period</label>
@@ -249,27 +276,55 @@
     </div>
     <button class="btn-clear" onclick="refreshDashboard()">&#8635; Refresh</button>
   </div>
+
   <div class="kpi-row" id="kpi-row"></div>
+
   <div class="charts-grid">
-    <div class="chart-card"><h4>Leads by Stage</h4><canvas id="chart-stage"></canvas></div>
-    <div class="chart-card"><h4>RFQs by Status</h4><canvas id="chart-rfq-status"></canvas></div>
-    <div class="chart-card chart-card-wide"><h4>Leads Added Over Time</h4><canvas id="chart-timeline"></canvas></div>
-    <div class="chart-card"><h4>Top Countries</h4><div id="top-countries"></div></div>
-    <div class="chart-card"><h4>By Team Member</h4><canvas id="chart-team"></canvas></div>
-    <div class="chart-card"><h4>Top Materials Requested</h4><div id="top-materials"></div></div>
-    <div class="chart-card"><h4>RFQ Conversion Funnel</h4><canvas id="chart-funnel"></canvas></div>
+    <div class="chart-card">
+      <h4>Leads by Stage</h4>
+      <canvas id="chart-stage"></canvas>
+    </div>
+    <div class="chart-card">
+      <h4>RFQs by Status</h4>
+      <canvas id="chart-rfq-status"></canvas>
+    </div>
+    <div class="chart-card chart-card-wide">
+      <h4>Leads Added Over Time</h4>
+      <canvas id="chart-timeline"></canvas>
+    </div>
+    <div class="chart-card">
+      <h4>Top Countries</h4>
+      <div id="top-countries"></div>
+    </div>
+    <div class="chart-card">
+      <h4>By Team Member</h4>
+      <canvas id="chart-team"></canvas>
+    </div>
+    <div class="chart-card">
+      <h4>Top Materials Requested</h4>
+      <div id="top-materials"></div>
+    </div>
+    <div class="chart-card">
+      <h4>RFQ Conversion Funnel</h4>
+      <canvas id="chart-funnel"></canvas>
+    </div>
   </div>
 </div>
 
+<!-- SIDE PANEL -->
 <div class="overlay" id="overlay" onclick="closePanel()"></div>
 <div class="panel" id="panel">
   <div class="panel-header">
-    <div><h2 id="panel-title">Lead Details</h2><div class="ph-meta" id="panel-meta"></div></div>
+    <div>
+      <h2 id="panel-title">Lead Details</h2>
+      <div class="ph-meta" id="panel-meta"></div>
+    </div>
     <button class="panel-close" onclick="closePanel()">&#10005;</button>
   </div>
   <div class="panel-body" id="panel-body"></div>
 </div>
 
+<!-- ADD LEAD MODAL -->
 <div class="modal-overlay" id="add-modal">
   <div class="modal">
     <h3>Add New Lead</h3>
@@ -312,12 +367,12 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbz-5hCQILfyN_26Y3ZTovQAiYYjrm15PQf4CCHsdLshmXC1_tUkGFgYyHw2YGzFy1mmvA/exec';
 const ALLOWED_DOMAIN = 'recykal.com';
 let currentToken = '';
+
 const TEAM = ['Iqbal Naseem','Prafulla Chandra','Rounak Jindal','Mayank Dixit'];
 const MATERIALS = {
   Copper:    ['Milberry','Candy','Birch','No 1 Copper','No 2 Copper','Cathode','Wire','Utensil','Berry'],
   Brass:     ['Honey','Label','Hairwire','Ebony','White','Yellow'],
   Aluminium: ['UBC','Tense','TT','Extrusion','Zorba','Wire'],
- Lead: ['Lead','Lead Scrap']
 };
 const ALL_MATERIALS = Object.values(MATERIALS).flat();
 const STAGES = ['Prospect','Contacted','Interested','Negotiating','Deal Closed','Not Workable','Not Interested'];
@@ -329,12 +384,14 @@ const STAGE_CLASS = {
   'Negotiating':'negotiating','Deal Closed':'closed',
   'Not Workable':'notworkable','Not Interested':'notworkable',
 };
+
 let currentTab = 'buyer';
 let allLeads = [], allRFQs = [];
 let rfqCache = {}, remarkCache = {}, rfqRemarkCache = {};
 let currentLead = null, currentUser = '';
 const dashCharts = {};
 
+// ── Auth ──
 function handleCredentialResponse(response) {
   const token = response.credential;
   const payload = JSON.parse(atob(token.split('.')[1]));
@@ -346,14 +403,14 @@ function handleCredentialResponse(response) {
     return;
   }
   currentToken = token; currentUser = payload.name;
-  sessionStorage.setItem('rclt_token', token);
+  localStorage.setItem('rclt_token', token);
   document.getElementById('signin-page').style.display = 'none';
   document.getElementById('user-display').textContent = payload.name + ' (' + payload.email + ')';
   loadLeads();
 }
 
 function signOut() {
-  sessionStorage.removeItem('rclt_token');
+  localStorage.removeItem('rclt_token');
   currentToken = ''; currentUser = '';
   google.accounts.id.disableAutoSelect();
   document.getElementById('signin-page').style.display = 'flex';
@@ -361,7 +418,7 @@ function signOut() {
 }
 
 window.onload = function() {
-  const saved = sessionStorage.getItem('rclt_token');
+  const saved = localStorage.getItem('rclt_token');
   if (saved) {
     try {
       const payload = JSON.parse(atob(saved.split('.')[1]));
@@ -376,6 +433,7 @@ window.onload = function() {
   document.getElementById('signin-page').style.display = 'flex';
 };
 
+// ── API ──
 async function api(action, data) {
   data = data || {};
   const url = API_URL + '?action=' + action + '&token=' + encodeURIComponent(currentToken) + '&data=' + encodeURIComponent(JSON.stringify(data));
@@ -383,6 +441,7 @@ async function api(action, data) {
   return res.json();
 }
 
+// ── Leads ──
 async function loadLeads() {
   const cacheKey = 'rclt_leads_' + currentTab;
   const cached = localStorage.getItem(cacheKey);
@@ -443,6 +502,7 @@ function renderTable(leads) {
   }).join('');
 }
 
+// ── Panel ──
 async function openLead(id) {
   currentLead = allLeads.find(function(l){ return l.id===id; });
   if (!currentLead) return;
@@ -516,9 +576,6 @@ async function addLeadRemark() {
     remarkCache[currentLead.id]=[newRem].concat(remarkCache[currentLead.id]||[]);
     const list = document.querySelector('.remarks-list');
     if (list) list.insertAdjacentHTML('afterbegin',remarkHtml(newRem));
-  } else {
-    alert('Could not save remark: '+(res.error||'Unknown error'));
-    input.value = text;
   }
 }
 
@@ -681,6 +738,7 @@ async function saveEditRFQ(rfqId) {
   else alert('Error: '+res.error);
 }
 
+// ── Add Lead Modal ──
 function openAddModal() {
   document.getElementById('add-modal').classList.add('open');
   document.getElementById('add-error').style.display='none';
@@ -726,6 +784,7 @@ async function saveLead() {
   } catch(e) { btn.disabled=false; btn.textContent='Add Lead'; errEl.textContent='Network error: '+e.message; errEl.style.display='block'; }
 }
 
+// ── All RFQs tab ──
 async function loadAllRFQs() {
   const cacheKey='rclt_rfqs_all';
   const cached=localStorage.getItem(cacheKey);
@@ -791,24 +850,32 @@ async function openLeadFromRFQ(leadId) {
   if (lead) { currentTab=lead.type||'buyer'; openLead(leadId); }
 }
 
+// ── Dashboard ──
 let dashAllLeads = [];
 
 async function loadDashboard() {
-  const cacheB=localStorage.getItem('rclt_leads_buyer');
-  const cacheS=localStorage.getItem('rclt_leads_supplier');
-  const cacheR=localStorage.getItem('rclt_rfqs_all');
-  let buyers=cacheB?JSON.parse(cacheB):[];
-  let suppliers=cacheS?JSON.parse(cacheS):[];
-  let rfqs=cacheR?JSON.parse(cacheR):[];
-  dashAllLeads=buyers.concat(suppliers); allRFQs=rfqs;
-  if (dashAllLeads.length||rfqs.length) renderDashboard();
+  const cacheB = localStorage.getItem('rclt_leads_buyer');
+  const cacheS = localStorage.getItem('rclt_leads_supplier');
+  const cacheR = localStorage.getItem('rclt_rfqs_all');
+  let buyers = cacheB ? JSON.parse(cacheB) : [];
+  let suppliers = cacheS ? JSON.parse(cacheS) : [];
+  let rfqs = cacheR ? JSON.parse(cacheR) : [];
+  dashAllLeads = buyers.concat(suppliers);
+  allRFQs = rfqs;
+  if (dashAllLeads.length || rfqs.length) renderDashboard();
+
   try {
-    const [rb,rs,rr]=await Promise.all([api('getLeads',{type:'buyer'}),api('getLeads',{type:'supplier'}),api('getAllRFQs',{})]);
-    buyers=rb.leads||[]; suppliers=rs.leads||[]; rfqs=rr.rfqs||[];
-    localStorage.setItem('rclt_leads_buyer',JSON.stringify(buyers));
-    localStorage.setItem('rclt_leads_supplier',JSON.stringify(suppliers));
-    localStorage.setItem('rclt_rfqs_all',JSON.stringify(rfqs));
-    dashAllLeads=buyers.concat(suppliers); allRFQs=rfqs;
+    const [rb, rs, rr] = await Promise.all([
+      api('getLeads',{type:'buyer'}),
+      api('getLeads',{type:'supplier'}),
+      api('getAllRFQs',{})
+    ]);
+    buyers = rb.leads||[]; suppliers = rs.leads||[]; rfqs = rr.rfqs||[];
+    localStorage.setItem('rclt_leads_buyer', JSON.stringify(buyers));
+    localStorage.setItem('rclt_leads_supplier', JSON.stringify(suppliers));
+    localStorage.setItem('rclt_rfqs_all', JSON.stringify(rfqs));
+    dashAllLeads = buyers.concat(suppliers);
+    allRFQs = rfqs;
     renderDashboard();
   } catch(e) {}
 }
@@ -816,105 +883,162 @@ async function loadDashboard() {
 function refreshDashboard() { loadDashboard(); }
 
 function renderDashboard() {
-  const months=parseInt(document.getElementById('dash-period').value)||0;
-  const typeFilter=document.getElementById('dash-type').value;
-  const now=new Date();
-  const cutoff=months>0?new Date(now.getFullYear(),now.getMonth()-months+1,1):null;
-  let leads=dashAllLeads;
-  if (typeFilter) leads=leads.filter(function(l){return l.type===typeFilter;});
-  if (cutoff) leads=leads.filter(function(l){return l.created_at&&new Date(l.created_at)>=cutoff;});
-  let rfqs=allRFQs;
-  if (typeFilter) rfqs=rfqs.filter(function(r){return r.lead_type===typeFilter;});
-  if (cutoff) rfqs=rfqs.filter(function(r){return r.created_at&&new Date(r.created_at)>=cutoff;});
-  const converted=rfqs.filter(function(r){return r.status==='Converted';}).length;
-  const convRate=rfqs.length?Math.round(converted/rfqs.length*100):0;
-  const activeLeads=leads.filter(function(l){return l.stage!=='Not Workable'&&l.stage!=='Not Interested';}).length;
-  document.getElementById('kpi-row').innerHTML=[
+  const months = parseInt(document.getElementById('dash-period').value) || 0;
+  const typeFilter = document.getElementById('dash-type').value;
+  const now = new Date();
+  const cutoff = months > 0 ? new Date(now.getFullYear(), now.getMonth() - months + 1, 1) : null;
+
+  let leads = dashAllLeads;
+  if (typeFilter) leads = leads.filter(function(l){ return l.type===typeFilter; });
+  if (cutoff) leads = leads.filter(function(l){ return l.created_at && new Date(l.created_at) >= cutoff; });
+
+  let rfqs = allRFQs;
+  if (typeFilter) rfqs = rfqs.filter(function(r){ return r.lead_type===typeFilter; });
+  if (cutoff) rfqs = rfqs.filter(function(r){ return r.created_at && new Date(r.created_at) >= cutoff; });
+
+  // KPIs
+  const converted = rfqs.filter(function(r){return r.status==='Converted';}).length;
+  const convRate = rfqs.length ? Math.round(converted/rfqs.length*100) : 0;
+  const activeLeads = leads.filter(function(l){return l.stage!=='Not Workable'&&l.stage!=='Not Interested';}).length;
+  document.getElementById('kpi-row').innerHTML = [
     {label:'Total Leads',value:leads.length,sub:typeFilter||'Buyers + Suppliers'},
     {label:'Active Leads',value:activeLeads,sub:'excl. not workable'},
     {label:'Total RFQs',value:rfqs.length,sub:'in period'},
     {label:'Converted',value:converted,sub:convRate+'% conversion rate'},
     {label:'Deal Closed',value:leads.filter(function(l){return l.stage==='Deal Closed';}).length,sub:'leads'},
     {label:'Negotiating',value:leads.filter(function(l){return l.stage==='Negotiating';}).length,sub:'leads'},
-  ].map(function(k){return '<div class="kpi-card"><div class="kpi-label">'+k.label+'</div><div class="kpi-value">'+k.value+'</div><div class="kpi-sub">'+k.sub+'</div></div>';}).join('');
-  mkChart('chart-stage','doughnut',STAGES,
-    STAGES.map(function(s){return leads.filter(function(l){return l.stage===s;}).length;}),
+  ].map(function(k){
+    return '<div class="kpi-card"><div class="kpi-label">'+k.label+'</div><div class="kpi-value">'+k.value+'</div><div class="kpi-sub">'+k.sub+'</div></div>';
+  }).join('');
+
+  // Stage donut
+  mkChart('chart-stage','doughnut',
+    STAGES,
+    [leads.filter(function(l){return l.stage===STAGES[0];}).length,
+     leads.filter(function(l){return l.stage===STAGES[1];}).length,
+     leads.filter(function(l){return l.stage===STAGES[2];}).length,
+     leads.filter(function(l){return l.stage===STAGES[3];}).length,
+     leads.filter(function(l){return l.stage===STAGES[4];}).length,
+     leads.filter(function(l){return l.stage===STAGES[5];}).length,
+     leads.filter(function(l){return l.stage===STAGES[6];}).length],
     ['#94a3b8','#3b82f6','#eab308','#f97316','#22c55e','#ef4444','#ef4444'],
-    {plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12}}}});
-  mkChart('chart-rfq-status','doughnut',RFQ_STATUSES,
+    {plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12}}}}
+  );
+
+  // RFQ status donut
+  mkChart('chart-rfq-status','doughnut',
+    RFQ_STATUSES,
     RFQ_STATUSES.map(function(s){return rfqs.filter(function(r){return r.status===s;}).length;}),
     ['#3b82f6','#f97316','#22c55e','#ef4444'],
-    {plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12}}}});
-  const monthBuckets={};
-  const numMonths=months>0?months:12;
-  for (let i=numMonths-1;i>=0;i--) {
-    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-    monthBuckets[key]=0;
+    {plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12}}}}
+  );
+
+  // Timeline — leads added per month
+  const monthBuckets = {};
+  const numMonths = months > 0 ? months : 12;
+  for (let i=numMonths-1; i>=0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    monthBuckets[key] = 0;
   }
   leads.forEach(function(l){
     if (!l.created_at) return;
-    const d=new Date(l.created_at);
-    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    const d = new Date(l.created_at);
+    const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
     if (monthBuckets[key]!==undefined) monthBuckets[key]++;
   });
-  const tlLabels=Object.keys(monthBuckets).map(function(k){
-    const p=k.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1])-1]+' '+p[0].slice(2);
+  const tlLabels = Object.keys(monthBuckets).map(function(k){
+    const [y,m]=k.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]+' '+y.slice(2);
   });
   mkChart('chart-timeline','bar',tlLabels,Object.values(monthBuckets),['#0f3d2e'],
-    {plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}});
+    {plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  );
+
+  // Top countries
   const cmap={};
-  leads.forEach(function(l){const c=(l.country||'Unknown').trim();cmap[c]=(cmap[c]||0)+1;});
+  leads.forEach(function(l){ const c=(l.country||'Unknown').trim(); cmap[c]=(cmap[c]||0)+1; });
   const countries=Object.entries(cmap).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
   const maxC=countries[0]?countries[0][1]:1;
-  document.getElementById('top-countries').innerHTML=countries.length?
-    '<table class="top-table"><thead><tr><th>Country</th><th>Leads</th><th style="width:120px"></th></tr></thead><tbody>'+
-    countries.map(function(e){return '<tr><td>'+esc(e[0])+'</td><td><strong>'+e[1]+'</strong></td><td><div class="progress-bar"><div class="progress-bar-fill" style="width:'+Math.round(e[1]/maxC*100)+'%"></div></div></td></tr>';}).join('')+
-    '</tbody></table>':'<span style="color:#94a3b8;font-size:12px">No data</span>';
+  document.getElementById('top-countries').innerHTML = countries.length ?
+    '<table class="top-table"><thead><tr><th>Country</th><th>Leads</th><th style="width:120px"></th></tr></thead><tbody>' +
+    countries.map(function(e){return '<tr><td>'+esc(e[0])+'</td><td><strong>'+e[1]+'</strong></td><td><div class="progress-bar"><div class="progress-bar-fill" style="width:'+Math.round(e[1]/maxC*100)+'%"></div></div></td></tr>';}).join('') +
+    '</tbody></table>' : '<span style="color:#94a3b8;font-size:12px">No data</span>';
+
+  // By team member
   const tmap={};
   TEAM.forEach(function(t){tmap[t]=0;});
   leads.forEach(function(l){if(l.assigned_to&&tmap[l.assigned_to]!==undefined)tmap[l.assigned_to]++;});
   mkChart('chart-team','bar',Object.keys(tmap),Object.values(tmap),['#0f3d2e','#1a5c45','#166534','#15803d'],
-    {plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}});
+    {plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  );
+
+  // Top materials
   const mmap={};
-  leads.forEach(function(l){parseMaterials(l.materials||'').forEach(function(m){if(m.name)mmap[m.name]=(mmap[m.name]||0)+1;});});
+  leads.forEach(function(l){
+    parseMaterials(l.materials||'').forEach(function(m){
+      if(m.name) mmap[m.name]=(mmap[m.name]||0)+1;
+    });
+  });
   const mats=Object.entries(mmap).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
   const maxM=mats[0]?mats[0][1]:1;
-  document.getElementById('top-materials').innerHTML=mats.length?
-    '<table class="top-table"><thead><tr><th>Material</th><th>Leads</th><th style="width:120px"></th></tr></thead><tbody>'+
-    mats.map(function(e){return '<tr><td><span class="mat-chip">'+esc(e[0])+'</span></td><td><strong>'+e[1]+'</strong></td><td><div class="progress-bar"><div class="progress-bar-fill" style="width:'+Math.round(e[1]/maxM*100)+'%"></div></div></td></tr>';}).join('')+
-    '</tbody></table>':'<span style="color:#94a3b8;font-size:12px">No materials data yet</span>';
+  document.getElementById('top-materials').innerHTML = mats.length ?
+    '<table class="top-table"><thead><tr><th>Material</th><th>Leads</th><th style="width:120px"></th></tr></thead><tbody>' +
+    mats.map(function(e){return '<tr><td><span class="mat-chip">'+esc(e[0])+'</span></td><td><strong>'+e[1]+'</strong></td><td><div class="progress-bar"><div class="progress-bar-fill" style="width:'+Math.round(e[1]/maxM*100)+'%"></div></div></td></tr>';}).join('') +
+    '</tbody></table>' : '<span style="color:#94a3b8;font-size:12px">No materials data yet</span>';
+
+  // Funnel chart
+  const funnelData = [
+    leads.length,
+    leads.filter(function(l){return ['Contacted','Interested','Negotiating','Deal Closed'].includes(l.stage);}).length,
+    leads.filter(function(l){return ['Interested','Negotiating','Deal Closed'].includes(l.stage);}).length,
+    leads.filter(function(l){return ['Negotiating','Deal Closed'].includes(l.stage);}).length,
+    leads.filter(function(l){return l.stage==='Deal Closed';}).length,
+    rfqs.length,
+    converted,
+  ];
   mkChart('chart-funnel','bar',
     ['Total','Contacted','Interested','Negotiating','Closed','RFQs','Converted'],
-    [leads.length,
-     leads.filter(function(l){return ['Contacted','Interested','Negotiating','Deal Closed'].includes(l.stage);}).length,
-     leads.filter(function(l){return ['Interested','Negotiating','Deal Closed'].includes(l.stage);}).length,
-     leads.filter(function(l){return ['Negotiating','Deal Closed'].includes(l.stage);}).length,
-     leads.filter(function(l){return l.stage==='Deal Closed';}).length,
-     rfqs.length,converted],
+    funnelData,
     ['#94a3b8','#3b82f6','#eab308','#f97316','#22c55e','#3b82f6','#22c55e'],
-    {indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}});
+    {indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}}
+  );
 }
 
-function mkChart(id,type,labels,data,colors,extraOpts) {
+function mkChart(id, type, labels, data, colors, extraOpts) {
   if (dashCharts[id]) { dashCharts[id].destroy(); }
-  const ctx=document.getElementById(id).getContext('2d');
-  dashCharts[id]=new Chart(ctx,{
-    type:type,
-    data:{labels:labels,datasets:[{data:data,backgroundColor:colors.length===1?data.map(function(){return colors[0];}):colors,borderWidth:type==='doughnut'?2:0,borderRadius:type==='bar'?4:0}]},
-    options:Object.assign({responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}}},extraOpts||{})
+  const ctx = document.getElementById(id).getContext('2d');
+  dashCharts[id] = new Chart(ctx, {
+    type: type,
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: colors.length===1 ? data.map(function(){return colors[0];}) : colors,
+        borderWidth: type==='doughnut'?2:0,
+        borderRadius: type==='bar'?4:0,
+      }]
+    },
+    options: Object.assign({
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: { legend: { display: false } }
+    }, extraOpts||{})
   });
 }
 
+// ── Tab switching ──
 function switchTab(tab) {
-  currentTab=tab;
-  const isDash=tab==='dashboard', isRFQ=tab==='rfqs';
-  ['buyer','supplier','rfqs','dashboard'].forEach(function(t){document.getElementById('tab-'+t).classList.toggle('active',t===tab);});
-  document.getElementById('filters').style.display=(!isRFQ&&!isDash)?'flex':'none';
-  document.getElementById('leads-table-wrap').style.display=(!isRFQ&&!isDash)?'block':'none';
-  document.getElementById('rfq-filters').style.display=isRFQ?'flex':'none';
-  document.getElementById('rfq-table-wrap').style.display=isRFQ?'block':'none';
-  document.getElementById('dashboard-wrap').style.display=isDash?'block':'none';
+  currentTab = tab;
+  const isDash = tab==='dashboard';
+  const isRFQ = tab==='rfqs';
+  ['buyer','supplier','rfqs','dashboard'].forEach(function(t){
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+  });
+  document.getElementById('filters').style.display = (!isRFQ&&!isDash)?'flex':'none';
+  document.getElementById('leads-table-wrap').style.display = (!isRFQ&&!isDash)?'block':'none';
+  document.getElementById('rfq-filters').style.display = isRFQ?'flex':'none';
+  document.getElementById('rfq-table-wrap').style.display = isRFQ?'block':'none';
+  document.getElementById('dashboard-wrap').style.display = isDash?'block':'none';
   if (isDash) loadDashboard();
   else if (isRFQ) loadAllRFQs();
   else { clearFilters(); loadLeads(); }
@@ -923,7 +1047,7 @@ function switchTab(tab) {
 function closePanel() {
   document.getElementById('overlay').classList.remove('open');
   document.getElementById('panel').classList.remove('open');
-  currentLead=null;
+  currentLead = null;
 }
 
 function esc(str) {
@@ -938,7 +1062,7 @@ function fmtDate(val) {
 
 function parseMaterials(str) {
   if (!str) return [];
-  return str.split(',').map(function(s){const p=s.trim().split(':');return {name:p[0]||'',qty:p[1]||'',uom:p[2]||'MT/Month'};}).filter(function(m){return m.name;});
+  return str.split(',').map(function(s){ const p=s.trim().split(':'); return {name:p[0]||'',qty:p[1]||'',uom:p[2]||'MT/Month'}; }).filter(function(m){return m.name;});
 }
 
 function serializeMaterials(mats) {
